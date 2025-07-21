@@ -241,15 +241,13 @@ def _create_option_section(parent, row, title, var, description):
     popup.place_forget()
 
     def show_popup(event):
-        popup.place(
-            x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
-            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10
-        )
+        popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
+            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10 )
 
     def hide_popup(event):
         popup.place_forget()
 
-    info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg="#404040", fg="blue", relief="flat", borderwidth=0)
+    info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
     info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0), pady=(10, 0))
 
     info_icon.bind("<Enter>", show_popup)
