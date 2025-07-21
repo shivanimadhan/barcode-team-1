@@ -3,6 +3,7 @@ import functools
 import os
 from itertools import pairwise
 from typing import List, Optional
+import pims
 
 import imageio.v3 as iio
 import nd2
@@ -25,79 +26,49 @@ def read_file(
     accept_dim: bool = False,
     allow_large_files: bool = True,
 ) -> Optional[np.ndarray]:
-    """Read a file and return its data if valid."""
+    """Read a file or numpy array using pims and return its data if valid."""
 
     print = functools.partial(builtins.print, flush=True)
-    acceptable_formats = (".tif", ".nd2", ".tiff")
-
-    if (os.path.exists(file_path) and file_path.endswith(acceptable_formats)) == False:
-        return None
 
     print(f"File {count_list[0]} of {count_list[1]}")
     print(file_path)
 
-    file_size = os.path.getsize(file_path)
-    file_size_gb = file_size / (1024**3)
-    if file_size_gb > 5 and not allow_large_files:
-        print(
-            "File size is too large -- this program does not process files larger than 5 GB."
-        )
-        return None
-
-    if file_path.endswith(".tif"):
-        file = iio.imread(file_path)
-        file = np.reshape(file, (file.shape + (1,))) if len(file.shape) == 3 else file
-        if file.shape[3] != min(file.shape):
-            file = np.swapaxes(np.swapaxes(file, 1, 2), 2, 3)
-    elif file_path.endswith(".nd2"):
-        try:
-            with nd2.ND2File(file_path) as ndfile:
-                if len(ndfile.sizes) >= 5:
-                    count_list[0] += 1
-                    raise TypeError(
-                        "Incorrect file dimensions: file must be time series data with 1+ channels (4 dimensions total)"
-                    )
-                if "Z" in ndfile.sizes:
-                    count_list[0] += 1
-                    raise TypeError("Z-stack identified, skipping to next file...")
-                if (
-                    "T" not in ndfile.sizes
-                    or len(ndfile.shape) <= 2
-                    or ndfile.sizes["T"] <= 5
-                ):
-                    count_list[0] += 1
-                    raise TypeError(
-                        "Too few frames, unable to capture dynamics, skipping to next file..."
-                    )
-                if ndfile == None:
-                    raise TypeError("Unable to read file, skipping to next file...")
-                file = ndfile.asarray()
-                shape = (
-                    file.shape[0],
-                    file.shape[2],
-                    file.shape[3],
-                    file.shape[1],
-                )  # Reorder
-                file = np.swapaxes(np.swapaxes(file, 1, 2), 2, 3)
-
-        except Exception as e:
-            raise TypeError(e)
-
-        if not isinstance(file, np.ndarray):
+    # Optionally check file size if it's a file (not a numpy array)
+    if isinstance(file_path, str) and os.path.exists(file_path):
+        file_size = os.path.getsize(file_path)
+        file_size_gb = file_size / (1024**3)
+        if file_size_gb > 5 and not allow_large_files:
+            print("File size is too large -- this program does not process files larger than 5 GB.")
             return None
 
-    if (file == 0).all():
-        print("Empty file: can not process, skipping to next file...")
+    try:
+        # If file_path is a string path, use pims.open
+        if isinstance(file_path, str):
+            sequence = pims.open(file_path)
+        # If file_path is a numpy array, use NumpyReader
+        elif isinstance(file_path, np.ndarray):
+            sequence = pims.NumpyReader(file_path)
+        else:
+            print("Unsupported input type for file_path.")
+            return None
+
+        # Convert the sequence to a numpy array of frames
+        frames = np.array([frame for frame in sequence])
+    except Exception as e:
+        print(f"Could not read file: {e}")
         return None
 
-    if not accept_dim and check_channel_dim(file[0]):
+    if frames.size == 0 or np.all(frames == 0):
+        print("Empty file: cannot process, skipping to next file...")
+        return None
+
+    # Dim check (keep your existing logic)
+    if not accept_dim and check_channel_dim(frames[0]):
         print(file_path + " is too dim, skipping to next file...")
         return None
 
-    else:
-        count_list[0] += 1
-        return file
-
+    count_list[0] += 1
+    return frames
 
 def read_csv_to_channel_results(filepath: str) -> List[ChannelResults]:
     """Read results from a CSV file into a list of ChannelResults."""
