@@ -162,7 +162,8 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     )
     row_idx += 2
 
-    _create_option_section(frame, row_idx, "Verbose", co.verbose, "Show more details")
+    _create_option_section(frame, row_idx, "Verbose", co.verbose, "Additional information will be provided while the data is being processed (time step updates, total processing time, status of image dimness)",
+    )
     row_idx += 2
 
     _create_option_section(
@@ -179,7 +180,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Save Reduced Data Structures",
         co.save_intermediates,
-        "Click to save reduced data structures (flow fields, binarized images, intensity distributions) for further analysis",
+        "Click to save reduced data structures (binarized images, optical flow fields, intensity distributions) for further analysis",
     )
     row_idx += 2
 
@@ -228,13 +229,40 @@ def _create_analysis_section(parent, row, title, var, description):
 
 
 def _create_option_section(parent, row, title, var, description):
-    """Helper to create option sections"""
-    tk.Label(parent, text=title, font=("TkDefaultFont", 10, "bold")).grid(
-        row=row, column=0, columnspan=3, sticky="w", padx=5, pady=(10, 0)
-    )
+    """Helper to create option sections with a checkbox, description, and popup icon"""
 
-    tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+    tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5, pady = (10,0))
 
-    tk.Label(parent, text=description).grid(
-        row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(0, 0)
+    title_label=tk.Label(parent, text=title, font=("bold"))
+    title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(10, 0))
+
+    # Create a popup label for the description
+    popup = tk.Label(
+        parent,
+        text=description,
+        bg="#202020",  
+        fg="white",  
+        font=("bold"), 
+        relief="flat",  
+        borderwidth=4,  
+        wraplength=500  
     )
+    popup.place_forget()  # Initially hide the popup
+
+    # Functions to show and hide the popup
+    def show_popup(event):
+        popup.place(
+            x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
+            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10
+        )
+
+    def hide_popup(event):
+        popup.place_forget()
+
+    info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg="#404040", fg="blue", relief="flat", borderwidth=0)
+    info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0), pady=(10, 0))
+
+    # Bind hover events to show and hide the popup
+    info_icon.bind("<Enter>", show_popup)
+    info_icon.bind("<Leave>", hide_popup)
+    
