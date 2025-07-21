@@ -236,20 +236,10 @@ def _create_option_section(parent, row, title, var, description):
     title_label=tk.Label(parent, text=title, font=("bold"))
     title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(10, 0))
 
-    # Create a popup label for the description
-    popup = tk.Label(
-        parent,
-        text=description,
-        bg="#202020",  
-        fg="white",  
-        font=("bold"), 
-        relief="flat",  
-        borderwidth=4,  
-        wraplength=500  
-    )
-    popup.place_forget()  # Initially hide the popup
+    # Create a popup label describing the feature
+    popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=500)
+    popup.place_forget()
 
-    # Functions to show and hide the popup
     def show_popup(event):
         popup.place(
             x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
@@ -262,7 +252,6 @@ def _create_option_section(parent, row, title, var, description):
     info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg="#404040", fg="blue", relief="flat", borderwidth=0)
     info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0), pady=(10, 0))
 
-    # Bind hover events to show and hide the popup
     info_icon.bind("<Enter>", show_popup)
     info_icon.bind("<Leave>", hide_popup)
     
