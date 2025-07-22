@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from gui.config import BarcodeConfigGUI, InputConfigGUI, PreviewConfigGUI
-
+from gui.preview_binarization import load_first_frame
 
 def create_flow_frame(
         parent, 
@@ -139,7 +139,7 @@ def create_flow_frame(
     preview_label = tk.Label(
         frame,
         text="Upload file to see optical flow field preview.",
-        compound="center",
+        compound="left",
     )
     preview_label.grid(row=row_f, column=0, columnspan=2, padx=5, pady=(10, 5))
     row_f += 1
@@ -157,7 +157,7 @@ def create_flow_frame(
             ax_flow.axis("off")
             canvas_flow.draw()
             preview_label.config(
-                image="", text="Upload file to see binarization threshold preview."
+                image="", text="Upload file to see optical flow preview."
             )
             return
 
@@ -170,7 +170,7 @@ def create_flow_frame(
 
         # Show down-sampled original
 
-        # Show down-sampled binarized
+        # Show down-sampled optical flow
         if img.ndim == 3 and img.shape[0] >= 2:
             images = img  # shape: (frames, height, width)
             frame_pair = (0, 1)
@@ -202,6 +202,7 @@ def create_flow_frame(
             )        
    
 
+
     def load_preview_frame(*args):
         # Load first frame of selected file
         if ci.mode.get() == "dir":
@@ -229,6 +230,8 @@ def create_flow_frame(
             print(f"[Preview] couldn't load first frame: {e}")
             preview_data["frame"] = None
         update_preview()
+
+
 
     def update_sample_file_options(*args):
         dir_path = ci.dir_path.get()
@@ -258,6 +261,7 @@ def create_flow_frame(
 
     # Wire up events
     ci.file_path.trace_add("write", load_preview_frame)
+
     cp.sample_file.trace_add("write", load_preview_frame)
     config.channels.selected_channel.trace_add("write", load_preview_frame)
     config.channels.parse_all_channels.trace_add("write", load_preview_frame)
@@ -266,6 +270,8 @@ def create_flow_frame(
     co.downsample_factor.trace_add("write", update_preview)
     co.nm_pixel_ratio.trace_add("write", update_preview)
     co.frame_interval_s.trace_add("write", update_preview)
+
+
     ci.dir_path.trace_add("write", update_sample_file_options)
 
     return frame

@@ -101,6 +101,10 @@ class BinarizationConfig(BaseConfig):
     frame_start_percent: float = 0.9  # 0.5 to 0.9
     frame_stop_percent: float = 1.0  # 0.9 to 1.0
 
+    # Adding these to allow output in um^2 instead of % area
+    # window_size_enabled: bool = False
+    # window_size_var: int = 15
+
 
 @dataclass
 class OpticalFlowConfig(BaseConfig):
