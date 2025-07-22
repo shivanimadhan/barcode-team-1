@@ -485,7 +485,7 @@ def _create_option_section(parent, row, var, title, description):
 
     def show_popup(event):
         popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
-            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10 )
+            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 20 )
     popup.tkraise() 
 
     def hide_popup(event):
@@ -495,4 +495,4 @@ def _create_option_section(parent, row, var, title, description):
     info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
 
     info_icon.bind("<Enter>", show_popup)
-    info_icon.bind("<Leave>", hide_popup)    
+    info_icon.bind("<Leave>", hide_popup)
