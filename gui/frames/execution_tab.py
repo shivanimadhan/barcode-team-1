@@ -178,39 +178,109 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
 
     cc.selected_channel.trace_add("write", on_channel_selection_changed)
 
-    # Analysis modules
+    row_idx += 2
+
+    # Select RDSes
     tk.Label(frame, text="Select Reduced Data Structures (RDS)", font=header).grid(
         row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
     )
     row_idx += 1
 
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         ca.enable_binarization,
-        "Evaluate video(s) using ",
-        "binarization branch",
+        "Binarization",
+        "Evaluate file(s) using Binarization branch (will generate a .CSV reduced data structure (RDS) for further analysis)",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         ca.enable_optical_flow,
-        "Evaluate video(s) using ",
-        "optical flow branch",
+        "Optical Flow",
+        "Evaluate file(s) using Optical Flow branch (will generate a .CSV reduced data structure (RDS) for further analysis)",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         ca.enable_intensity_distribution,
-        "Evaluate video(s) using ",
-        "intensity distribution branch",
+        "Intensity Distribution",
+        "Evaluate file(s) using Intensity Distribution branch (will generate a .CSV reduced data structure (RDS) for further analysis)",
     )
     row_idx += 2
 
+    # Handling Dim Data
+    tk.Label(frame, text="Handling Dim Data", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
+
+    _create_option_section(
+        frame,
+        row_idx,
+        cq.accept_dim_images,
+        "Scan dim files",
+        "Include files that may be too dim to accurately profile (e.g. low light conditions, poor contrast)",
+    )
+    row_idx += 2
+
+    _create_option_section(
+        frame,
+        row_idx,
+        cq.accept_dim_channels,
+        "Scan dim channels",
+        "Include channels that may be too dim to accurately profile (e.g. one channel is dim while others are better defined)",
+    )
+    row_idx += 2
+
+    # Save Settings
+    tk.Label(frame, text="Save Settings", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
+
+    _create_option_section(
+        frame,
+        row_idx,
+        co.verbose,
+        "Verbose Output",
+        "Provide additional information in the run-time Processing Log while the data is being processed (e.g. time step updates, total processing time, image dimness)",
+    )
+    row_idx += 2
+
+    _create_option_section(
+        frame,
+        row_idx,
+        co.save_graphs,
+        "Save Graphs",
+        "Save .PNG graphs representing chosen data structures (binarized images, optical flow fields, intensity distributions)",
+    )
+    row_idx += 2
+
+    _create_option_section(
+        frame,
+        row_idx,
+        co.save_intermediates,
+        "Save Reduced Data Structures",
+        "Save .CSV reduced data structures for chosen branches (binarized images, optical flow fields, intensity distributions) for further analysis",
+    )
+    row_idx += 2
+
+    _create_option_section(
+        frame,
+        row_idx,
+        co.generate_dataset_barcode,
+        "Generate Dataset Barcode",
+        "Save an .PNG BARCODE matrix for the dataset, plotting the 17 BARCODE metrics for each channel in the dataset on a color-coded scale",
+    )
+
+    row_idx += 2
+
+    '''
     tk.Label(frame, text="Handling Dim Data", font=header).grid(
         row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
     )
@@ -294,6 +364,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     )
 
     row_idx += 2
+'''
 
     tk.Label(frame, text="Configuration Settings", font=header).grid(
         row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
@@ -337,11 +408,10 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     #     co.generate_dataset_barcode,
     #     "Generates an aggregate barcode for the dataset",
     # )
-    # row_idx += 2
+
 
     # Configuration file
 
-    
     # tk.Label(frame, text="Configuration YAML File:").grid(
     #     row=row_idx, column=0, sticky="w", padx=5, pady=2
     # )
@@ -397,3 +467,32 @@ def _create_analysis_section(parent, row, var, description, rds_name):
     # tk.Label(parent, text=description).grid(
     #     row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(0, 0)
     # )
+
+
+def _create_option_section(parent, row, var, title, description):
+    """Helper to create option sections with a checkbox, description, and a popup icon"""
+
+    tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+
+    normal = ("TkDefaultFont", 13)
+
+    title_label=tk.Label(parent, text=title, font=normal)
+    title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5))
+
+    # Create a popup label describing the feature
+    popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
+    popup.place_forget()
+
+    def show_popup(event):
+        popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
+            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10 )
+    popup.tkraise() 
+
+    def hide_popup(event):
+        popup.place_forget()
+
+    info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
+    info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
+
+    info_icon.bind("<Enter>", show_popup)
+    info_icon.bind("<Leave>", hide_popup)    
