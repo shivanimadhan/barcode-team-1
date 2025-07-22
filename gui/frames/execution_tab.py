@@ -441,28 +441,30 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     # tk.Button(frame, text="Browse YAML…", command=browse_config_file).grid(
     #     row=row_idx, column=2, sticky="w", padx=5
     # )
+    # Add popup beneath YAML section
+    zero_length_label = tk.Label(parent, text="", width=0)
+    create_popup(frame, "If desired, choose branch settings from a prior .YAML file.", row_idx + 1, zero_length_label)
 
     return frame
 
+# def _create_analysis_section(parent, row, var, description, rds_name):
+#     """Helper to create analysis module sections"""
+#     # tk.Label(parent, text=title, font=("TkDefaultFont", 10, "bold")).grid(
+#     #     row=row, column=0, columnspan=3, sticky="w", padx=5, pady=(10, 0)
+#     # )
 
-def _create_analysis_section(parent, row, var, description, rds_name):
-    """Helper to create analysis module sections"""
-    # tk.Label(parent, text=title, font=("TkDefaultFont", 10, "bold")).grid(
-    #     row=row, column=0, columnspan=3, sticky="w", padx=5, pady=(10, 0)
-    # )
+#     tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
 
-    tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+#     bold = ("TkDefaultFont", 13, "bold")
+#     normal = ("TkDefaultFont", 13)
 
-    bold = ("TkDefaultFont", 13, "bold")
-    normal = ("TkDefaultFont", 13)
+#     tk.Label(parent, text=description, font=normal).grid(
+#         row=row + 1, column=0, sticky="w", padx=(25, 5)
+#     )
 
-    tk.Label(parent, text=description, font=normal).grid(
-        row=row + 1, column=0, sticky="w", padx=(25, 5)
-    )
-
-    tk.Label(parent, text=rds_name, font=bold).grid(
-        row=row + 1, column=0, sticky="w", padx=(170, 5)  # adjust as needed
-    )
+#     tk.Label(parent, text=rds_name, font=bold).grid(
+#         row=row + 1, column=0, sticky="w", padx=(170, 5)  # adjust as needed
+#     )
 
     # tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
 
@@ -471,30 +473,92 @@ def _create_analysis_section(parent, row, var, description, rds_name):
     # )
 
 
-def _create_option_section(parent, row, var, title, description):
-    """Helper to create option sections with a checkbox, description, and a popup icon"""
+# def _create_option_section(parent, row, var, title, description):
+#     """Helper to create option sections with a checkbox, description, and a popup icon"""
 
+#     tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+
+#     normal = ("TkDefaultFont", 13)
+
+#     title_label=tk.Label(parent, text=title, font=normal)
+#     title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5))
+
+#     # Create a popup label describing the feature
+#     popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
+#     popup.place_forget()
+
+#     '''def show_popup(event):
+#         popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
+#             y=info_icon.winfo_rooty() - parent.winfo_rooty() - 20 )
+#     popup.tkraise() '''
+
+#     '''def hide_popup(event):
+#         popup.place_forget()'''
+
+#     info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
+#     info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
+
+#     info_icon.bind("<Enter>", show_popup)
+#     info_icon.bind("<Leave>", hide_popup)
+
+
+
+# def create_popup(parent, description, info_icon):
+#     """Helper to create a popup window describing the feature."""
+#     def show_popup(event):
+#         # Create popup
+#         popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
+#         popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10, y=info_icon.winfo_rooty() - parent.winfo_rooty() - 20)
+#         popup.tkraise()
+
+#         def hide_popup(event):
+#             popup.destroy()  # Destroy popup 
+#         info_icon.bind("<Leave>", hide_popup)
+
+#     info_icon.bind("<Enter>", show_popup)
+
+
+# def _create_option_section(parent, row, var, title, description):
+#     """Helper to create option sections with a checkbox, description, and a popup icon."""
+#     tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+
+#     normal = ("TkDefaultFont", 13)
+
+#     title_label = tk.Label(parent, text=title, font=normal)
+#     title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5))
+
+#     info_icon = tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
+#     info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
+
+#     # Call the popup creation function
+#     create_popup(parent, description, info_icon)
+
+
+def create_popup(parent, description, row, title_label):
+    """Helper to create a popup window describing the feature and place the icon."""
+    info_icon = tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
+    info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
+
+    def show_popup(event):
+        # Create popup
+        popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
+        popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10, y=info_icon.winfo_rooty() - parent.winfo_rooty() - 20)
+        popup.tkraise()
+
+        def hide_popup(event):
+            popup.destroy()  # Destroy popup
+        info_icon.bind("<Leave>", hide_popup)
+
+    info_icon.bind("<Enter>", show_popup)
+
+def _create_option_section(parent, row, var, title, description):
+    """Helper to create option sections with a checkbox, description, and a popup icon."""
     tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
 
     normal = ("TkDefaultFont", 13)
 
-    title_label=tk.Label(parent, text=title, font=normal)
+    title_label = tk.Label(parent, text=title, font=normal)
     title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5))
 
-    # Create a popup label describing the feature
-    popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
-    popup.place_forget()
-
-    def show_popup(event):
-        popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
-            y=info_icon.winfo_rooty() - parent.winfo_rooty() - 20 )
-    popup.tkraise() 
-
-    def hide_popup(event):
-        popup.place_forget()
-
-    info_icon=tk.Label(parent, text="ℹ️", font=("Arial", 12), bg=parent.winfo_toplevel().cget("bg"), fg="blue", relief="flat", borderwidth=0)
-    info_icon.grid(row=row + 1, column=0, sticky="w", padx=(title_label.winfo_reqwidth() + 30, 0))
-
-    info_icon.bind("<Enter>", show_popup)
-    info_icon.bind("<Leave>", hide_popup)
+    # Call the popup creation function to create and place the info icon
+    create_popup(parent, description, row, title_label)
