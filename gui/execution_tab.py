@@ -116,30 +116,30 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     cc.selected_channel.trace_add("write", on_channel_selection_changed)
 
     # Analysis modules
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         "Binarization",
         ca.enable_binarization,
-        "Evaluate video(s) using binarization branch",
+        "Evaluate file(s) using binarization branch",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         "Optical Flow",
         ca.enable_optical_flow,
-        "Evaluate video(s) using optical flow branch",
+        "Evaluate file(s) using optical flow branch",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    _create_option_section(
         frame,
         row_idx,
         "Intensity Distribution",
         ca.enable_intensity_distribution,
-        "Evaluate video(s) using intensity distribution branch",
+        "Evaluate file(s) using intensity distribution branch",
     )
     row_idx += 2
 
@@ -149,7 +149,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Include dim files",
         cq.accept_dim_images,
-        "Click to scan files that may be too dim to accurately profile",
+        "Scan files that may be too dim to accurately profile (e.g. low light conditions, poor contrast)",
     )
     row_idx += 2
 
@@ -158,11 +158,11 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Include dim channels",
         cq.accept_dim_channels,
-        "Click to scan channels that may be too dim to accurately profile",
+        "Scan channels that may be too dim to accurately profile (e.g. one channel is dim while others are better defined) ",
     )
     row_idx += 2
 
-    _create_option_section(frame, row_idx, "Verbose", co.verbose, "Additional information will be provided while the data is being processed (time step updates, total processing time, status of image dimness)",
+    _create_option_section(frame, row_idx, "Verbose", co.verbose, "Provide additional information in the run-time Processing Log while the data is being processed (e.g. time step updates, total processing time, status of image dimness)",
     )
     row_idx += 2
 
@@ -171,7 +171,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Save Graphs",
         co.save_graphs,
-        "Click to save graphs representing sample changes",
+        "Save .PNG graphs representing three data structures (binarized images, optical flow fields, intensity distributions)",
     )
     row_idx += 2
 
@@ -180,7 +180,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Save Reduced Data Structures",
         co.save_intermediates,
-        "Click to save reduced data structures (binarized images, optical flow fields, intensity distributions) for further analysis",
+        "Save .CSV reduced data structures (binarized images, optical flow fields, intensity distributions) for further analysis",
     )
     row_idx += 2
 
@@ -189,13 +189,13 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row_idx,
         "Dataset Barcode",
         co.generate_dataset_barcode,
-        "Generates an aggregate barcode for the dataset",
+        "Generate an .PNG BARCODE matrix for the dataset, plotting the 17 BARCODE metrics for each channel in the dataset on a color-coded scale",
     )
     row_idx += 2
 
     # Configuration file
     tk.Label(frame, text="Configuration YAML File:").grid(
-        row=row_idx, column=0, sticky="w", padx=5, pady=2
+        row=row_idx, column=0, sticky="w", padx=5, pady=25
     )
     config_entry = tk.Entry(frame, textvariable=ci.configuration_file, width=35)
     config_entry.grid(row=row_idx, column=1, padx=5, pady=2)
@@ -237,12 +237,13 @@ def _create_option_section(parent, row, title, var, description):
     title_label.grid(row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(10, 0))
 
     # Create a popup label describing the feature
-    popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=500)
+    popup = tk.Label(parent, text=description, bg="#202020", fg="white", relief="flat", borderwidth=4, wraplength=600)
     popup.place_forget()
 
     def show_popup(event):
         popup.place(x=info_icon.winfo_rootx() - parent.winfo_rootx() + info_icon.winfo_width() + 10,
             y=info_icon.winfo_rooty() - parent.winfo_rooty() - 10 )
+    popup.tkraise() 
 
     def hide_popup(event):
         popup.place_forget()
