@@ -157,11 +157,13 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     channel_spin.grid(row=row_idx, column=0, padx=(50, 5), pady=2)
     row_idx += 1
 
-    parse_all_chk = tk.Checkbutton(
-        frame, text="Parse All Channels", variable=cc.parse_all_channels
+    _create_option_section(
+        frame,
+        row_idx,
+        cc.parse_all_channels,
+        "Parse All Channels",
+        "Either scan a specific channel or scan every video channel. Selecting a channel <0 will result in reverse indexing of channels (i.e. selecting -1 will analyze the last channel of every file scanned, rather than the first)",
     )
-    parse_all_chk.grid(row=row_idx, column=0, sticky="w", padx=5, pady=2)
-    row_idx += 1
 
     # Channel selection mutual exclusion
     def on_channels_toggled(*args):
