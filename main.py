@@ -42,7 +42,7 @@ def create_tabs(
     binarization_frame = create_binarization_frame(
         notebook, config, preview_config, input_config
     )
-    flow_frame = create_flow_frame(notebook, config)
+    flow_frame = create_flow_frame(notebook, config, preview_config, input_config)
     intensity_frame = create_intensity_frame(notebook, config)
     barcode_frame = create_barcode_frame(notebook, config, aggregation_config)
 
