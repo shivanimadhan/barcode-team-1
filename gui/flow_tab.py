@@ -41,26 +41,6 @@ def create_flow_frame(parent, config: BarcodeConfigGUI):
     downsample_spin.grid(row=row_f, column=1, padx=5, pady=5)
     row_f += 1
 
-    tk.Label(frame, text="Micron to Pixel Ratio (1 nm – 1 mm)").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
-    um_pixel_spin = ttk.Spinbox(
-        frame, from_=10**-3, to=10**3,
-        increment=10**-3,
-        textvariable=co.um_pixel_ratio,
-        width=9
-    )
-    um_pixel_spin.grid(row=row_f, column=1, padx=5, pady=5)
-    row_f += 1
-
-    tk.Label(frame, text="Exposure Time [seconds] (1 ms - 1 hour)").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
-    frame_interval_spin = ttk.Spinbox(
-        frame, from_=10**-3, to=3.6 * 10**3,
-        increment=10**-3,
-        textvariable=co.exposure_time,
-        width=7
-    )
-    frame_interval_spin.grid(row=row_f, column=1, padx=5, pady=5)
-    row_f += 1
-
     tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25)").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
     of_pf_eval_spin = ttk.Spinbox(
         frame, from_=0.01, to=0.25,

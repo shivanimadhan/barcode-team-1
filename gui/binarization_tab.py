@@ -204,7 +204,7 @@ def create_binarization_frame(
                 channel = 0
             else:
                 channel = config.channels.selected_channel.get()
-                preview_data["frame"] = load_binarization_frame(path, channel)
+            preview_data["frame"] = load_binarization_frame(path, channel)
         except Exception as e:
             print(path)
             print(f"[Preview] couldn't load first frame: {e}")

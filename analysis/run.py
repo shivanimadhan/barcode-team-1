@@ -11,7 +11,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
     results = ChannelResults(filepath=filepath, channel=channel)
     figures = []
 
-    video = file[:,:,:,channel]
+    video = file[:,:,:, channel]
     if (video == 0).all():
         vprint('Video appears to be blank, please check channel manually.')
         return results, figures
@@ -19,8 +19,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
     if config.reader.binarization:
         try:
             bfig, binarization_results = analyze_binarization(
-                video, output_dir, config.image_binarization_parameters, config.writer
-            )
+                video, output_dir, config.image_binarization_parameters, config.reader, config.writer)
             results.binarization = binarization_results
             if bfig and config.writer.save_visualizations:
                 figures.append(bfig)
@@ -31,11 +30,9 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
                 )
 
     # Run optical flow analysis
-    if config.reader.flow:
+    if config.reader.optical_flow:
         try:
-            results.flow = analyze_optical_flow(
-                video, output_dir, config.optical_flow_parameters, config.writer
-            )
+            results.flow = analyze_optical_flow(video, output_dir, config.optical_flow_parameters, config.reader, config.writer)
         except Exception as e:
             with open(fail_file_loc, "a", encoding="utf-8") as log_file:
                 log_file.write(

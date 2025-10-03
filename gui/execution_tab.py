@@ -114,6 +114,26 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
 
     cc.selected_channel.trace_add("write", on_channel_selection_changed)
 
+    tk.Label(frame, text="Micron to Pixel Ratio (1 nm – 1 mm)").grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
+    um_pixel_spin = ttk.Spinbox(
+        frame, from_=10**-3, to=10**3,
+        increment=10**-3,
+        textvariable=cr.um_pixel_ratio,
+        width=9
+    )
+    um_pixel_spin.grid(row=row_idx, column=1, padx=5, pady=5)
+    row_idx += 1
+
+    tk.Label(frame, text="Exposure Time [seconds] (1 ms - 1 hour)").grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
+    frame_interval_spin = ttk.Spinbox(
+        frame, from_=10**-3, to=3.6 * 10**3,
+        increment=10**-3,
+        textvariable=cr.exposure_time,
+        width=7
+    )
+    frame_interval_spin.grid(row=row_idx, column=1, padx=5, pady=5)
+    row_idx += 1
+    
     # Analysis modules
     _create_analysis_section(
         frame,
@@ -128,7 +148,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         frame,
         row_idx,
         "Optical Flow",
-        cr.flow,
+        cr.optical_flow,
         "Evaluate video(s) using optical flow branch",
     )
     row_idx += 2
@@ -141,6 +161,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         "Evaluate video(s) using intensity distribution branch",
     )
     row_idx += 2
+
 
     # Options
     _create_option_section(
