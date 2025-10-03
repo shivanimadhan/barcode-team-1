@@ -7,7 +7,7 @@ import numpy as np
 from analysis import run_analysis_pipeline
 from core import BarcodeConfig, ChannelResults
 from utils import vprint, set_verbose, Timer
-from utils.reader import read_file, extract_nd2_metadata, check_first_frame_dim
+from utils.reader import read_file, check_first_frame_dim
 from utils.setup import (
     create_output_directories,
     create_channel_output_dir,
@@ -17,9 +17,7 @@ from utils.setup import (
 from utils.writer import generate_combined_barcode, results_to_csv
 
 
-def determine_channels_to_process(
-    config: BarcodeConfig, total_channels: int
-) -> List[int]:
+def determine_channels_to_process(config: BarcodeConfig, total_channels: int) -> List[int]:
     """Determine which channels to process based on config settings."""
     if config.channels.parse_all_channels:
         vprint("Total Channels:", total_channels)
@@ -98,7 +96,7 @@ def process_single_file(
     # Load and validate file
     try:
         counts = [count, total]
-        file = read_file(filepath, counts, config.reader.accept_dim_images)
+        file = read_file(filepath, counts, config, config.reader.accept_dim_images)
         count, total = counts
     except TypeError as e:
         raise TypeError(e)
@@ -123,7 +121,7 @@ def process_single_file(
 
         # Check for dim channels
         is_dim = check_first_frame_dim(file[:, :, :, channel])
-        if is_dim and not config.quality.accept_dim_channels:
+        if is_dim and not config.reader.accept_dim_channels:
             vprint("Channel too dim, not enough signal, skipping...")
             continue
         elif is_dim:
@@ -131,9 +129,6 @@ def process_single_file(
 
         # Create channel output directory
         channel_output_dir = create_channel_output_dir(figure_dir_name, channel)
-
-        # Handle ND2 metadata extraction here
-        extract_nd2_metadata(filepath, config)
 
         # Run analysis pipeline
         results, figures = run_analysis_pipeline(

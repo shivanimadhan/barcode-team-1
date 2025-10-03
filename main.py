@@ -9,6 +9,7 @@ from core import BarcodeConfig, InputConfig, PreviewConfig, AggregationConfig
 from gui import (
     create_barcode_frame,
     create_binarization_frame,
+    create_comparison_frame,
     create_execution_frame,
     create_flow_frame,
     create_intensity_frame,
@@ -21,6 +22,7 @@ from gui.config import (
     InputConfigGUI,
     PreviewConfigGUI,
     AggregationConfigGUI,
+    ComparisonConfigGUI
 )
 
 matplotlib.use("Agg")
@@ -32,6 +34,7 @@ def create_tabs(
     input_config: InputConfigGUI,
     preview_config: PreviewConfigGUI,
     aggregation_config: AggregationConfigGUI,
+    comparison_config: ComparisonConfigGUI
 ):
     """Create all tabs using our extracted components"""
     notebook = ttk.Notebook(parent, takefocus=0)
@@ -39,12 +42,11 @@ def create_tabs(
 
     # Create all tabs
     execution_frame = create_execution_frame(notebook, config, input_config)
-    binarization_frame = create_binarization_frame(
-        notebook, config, preview_config, input_config
-    )
+    binarization_frame = create_binarization_frame(notebook, config, preview_config, input_config)
     flow_frame = create_flow_frame(notebook, config)
     intensity_frame = create_intensity_frame(notebook, config, preview_config, input_config)
     barcode_frame = create_barcode_frame(notebook, config, aggregation_config)
+    comparison_frame = create_comparison_frame(notebook, config, comparison_config)
 
     # Add tabs to notebook
     notebook.add(execution_frame, text="Execution Settings")
@@ -52,6 +54,7 @@ def create_tabs(
     notebook.add(flow_frame, text="Optical Flow Settings")
     notebook.add(intensity_frame, text="Intensity Distribution Settings")
     notebook.add(barcode_frame, text="Barcode Generator + CSV Aggregator")
+    notebook.add(comparison_frame, text="Barcode Metric Comparison")
 
     return notebook
 
@@ -79,7 +82,7 @@ def create_processing_worker(
 
                 # Handle CSV aggregation
                 combined_location = aggregation_config.output_location
-                generate_agg_barcode = aggregation_config.generate_barcode
+                generate_agg_barcode = aggregation_config.generate_single_barcode
                 sort_param = aggregation_config.sort_parameter
                 csv_paths = aggregation_config.csv_paths_list
 
@@ -145,6 +148,7 @@ def main():
     gui_input_config = InputConfigGUI()
     gui_preview_config = PreviewConfigGUI()
     gui_aggregation_config = AggregationConfigGUI()
+    gui_comparison_config = ComparisonConfigGUI()
 
     # Create tabs
     create_tabs(
@@ -153,6 +157,7 @@ def main():
         gui_input_config,
         gui_preview_config,
         gui_aggregation_config,
+        gui_comparison_config,
     )
 
     # Run button
@@ -163,6 +168,7 @@ def main():
         config = gui_config.config
         input_config = gui_input_config.config
         aggregation_config = gui_aggregation_config.config
+        
         
         worker = create_processing_worker(config, input_config, aggregation_config)
         threading.Thread(target=worker, daemon=True).start()

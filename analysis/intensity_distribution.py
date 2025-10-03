@@ -8,9 +8,7 @@ from scipy.stats import kurtosis
 from core import IntensityDistributionConfig, WriterConfig, IntensityResults
 from utils import vprint, average_largest, find_analysis_frames
 from utils.intensity_distribution import (
-    frame_mode, median_skewness, mode_skewness, 
-    kurtosis, calc_frame_metric, histogram
-)
+    frame_mode, median_skewness, mode_skewness, kurtosis, histogram)
 from utils.setup import setup_csv_writer
 
 def analyze_intensity_distribution(video: np.ndarray, name: str, id_config: IntensityDistributionConfig, out_config: WriterConfig) -> IntensityResults:

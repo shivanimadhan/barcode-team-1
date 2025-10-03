@@ -35,11 +35,11 @@ def create_barcode_frame(
             filetypes=[("CSV Files", "*.csv")], title="Select one or more CSV files"
         )
         if chosen:
-            ca.csv_paths_list.clear()
+            ca.csv_paths_list = []
             ca.csv_paths_list.extend(chosen)
             csv_label.config(text=f"{len(chosen)} CSV files selected")
         else:
-            ca.csv_paths_list.clear()
+            ca.csv_paths_list.set("")
             csv_label.config(text="No files selected")
 
     tk.Button(frame, text="Browse CSV Files...", command=browse_csv_files).grid(

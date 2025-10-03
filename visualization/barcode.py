@@ -100,9 +100,9 @@ def generate_comparison_barcodes(csv_list):
             barcode[:,idx] = cmap(norm(data[:,idx]))
             norm_ax = fig.add_subplot(gs[1, 8 * idx: 8 * idx + 1])
             cbar = norm_ax.figure.colorbar(mpl.cm.ScalarMappable(norm = norm, cmap = cmap), cax = norm_ax, orientation='vertical')
-            cbar.set_label(add_units(headers[idx + 3]), size=7)
-            cbar.formatter.set_powerlimits((-2, 2))
-            cbar.ax.tick_params(labelsize=6)
+            cbar.set_label(add_units(headers[idx + 3]), size=6)
+            # cbar.formatter.set_powerlimits((-2, 2))
+            cbar.ax.tick_params(labelsize=5)
             
         plt.subplots_adjust(wspace=1, hspace=0.05)
         # Create a figure and axis
