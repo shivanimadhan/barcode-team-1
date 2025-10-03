@@ -53,16 +53,20 @@ class ReaderConfigGUI:
     accept_dim_channels: tk.BooleanVar = field(init=False)
     accept_dim_images: tk.BooleanVar = field(init=False)
     binarization: tk.BooleanVar = field(init=False)
-    flow: tk.BooleanVar = field(init=False)
+    exposure_time: tk.DoubleVar = field(init=False)
     intensity_distribution: tk.BooleanVar = field(init=False)
+    optical_flow: tk.BooleanVar = field(init=False)
+    um_pixel_ratio: tk.DoubleVar = field(init=False)
     verbose: tk.BooleanVar = field(init=False)
 
     def __post_init__(self):
         self.accept_dim_channels = tk.BooleanVar(value=self._core_config.accept_dim_channels)
         self.accept_dim_images = tk.BooleanVar(value=self._core_config.accept_dim_images)
         self.binarization = tk.BooleanVar(value=self._core_config.binarization)
-        self.flow = tk.BooleanVar(value=self._core_config.flow)
+        self.exposure_time = tk.DoubleVar(value=self._core_config.exposure_time)
         self.intensity_distribution = tk.BooleanVar(value=self._core_config.intensity_distribution)
+        self.optical_flow = tk.BooleanVar(value=self._core_config.optical_flow)
+        self.um_pixel_ratio = tk.DoubleVar(value=self._core_config.um_pixel_ratio)
         self.verbose = tk.BooleanVar(value=self._core_config.verbose)
 
     @property
@@ -72,8 +76,10 @@ class ReaderConfigGUI:
             accept_dim_channels=self.accept_dim_channels.get(),
             accept_dim_images=self.accept_dim_images.get(),
             binarization=self.binarization.get(),
-            flow=self.flow.get(),
+            exposure_time=self.exposure_time.get(),
             intensity_distribution=self.intensity_distribution.get(),
+            optical_flow=self.optical_flow.get(),
+            um_pixel_ratio=self.um_pixel_ratio.get(),
             verbose=self.verbose.get(),
         )
 
@@ -83,8 +89,10 @@ class ReaderConfigGUI:
         self.accept_dim_channels.set(new_config.accept_dim_channels)
         self.accept_dim_images.set(new_config.accept_dim_images)
         self.binarization.set(new_config.binarization)
-        self.flow.set(new_config.flow)
+        self.exposure_time.set(new_config.exposure_time)
         self.intensity_distribution.set(new_config.intensity_distribution)
+        self.optical_flow.set(new_config.optical_flow)
+        self.um_pixel_ratio.set(new_config.um_pixel_ratio)
         self.verbose.set(new_config.verbose)
 
 @dataclass
@@ -181,16 +189,12 @@ class OpticalFlowConfigGUI:
     frame_step: tk.IntVar = field(init=False)
     win_size: tk.IntVar = field(init=False)
     downsample: tk.IntVar = field(init=False)
-    um_pixel_ratio: tk.DoubleVar = field(init=False)
-    exposure_time: tk.DoubleVar = field(init=False)
     percentage_frames_evaluated: tk.DoubleVar = field(init=False)
 
     def __post_init__(self):
         self.frame_step = tk.IntVar(value=self._core_config.frame_step)
         self.win_size = tk.IntVar(value=self._core_config.win_size)
         self.downsample = tk.IntVar(value=self._core_config.downsample)
-        self.um_pixel_ratio = tk.DoubleVar(value=self._core_config.um_pixel_ratio)
-        self.exposure_time = tk.DoubleVar(value=self._core_config.exposure_time)
         self.percentage_frames_evaluated = tk.DoubleVar(value=self._core_config.percentage_frames_evaluated)
 
     @property
@@ -200,8 +204,6 @@ class OpticalFlowConfigGUI:
             frame_step=self.frame_step.get(),
             win_size=self.win_size.get(),
             downsample=self.downsample.get(),
-            um_pixel_ratio=self.um_pixel_ratio.get(),
-            exposure_time=self.exposure_time.get(),
             percentage_frames_evaluated=self.percentage_frames_evaluated.get(),
         )
 
@@ -211,8 +213,6 @@ class OpticalFlowConfigGUI:
         self.frame_step.set(new_config.frame_step)
         self.win_size.set(new_config.win_size)
         self.downsample.set(new_config.downsample)
-        self.um_pixel_ratio.set(new_config.um_pixel_ratio)
-        self.exposure_time.set(new_config.exposure_time)
         self.percentage_frames_evaluated.set(new_config.percentage_frames_evaluated)
 
 @dataclass
@@ -284,15 +284,14 @@ class AggregationConfigGUI:
     generate_single_barcode: tk.BooleanVar = field(init=False)
     generate_comparison_barcodes: tk.BooleanVar = field(init=False)
     sort_parameter: tk.StringVar = field(init=False)
-    csv_paths_list: tk.StringVar = field(init=False)
-
+    csv_paths_list: List[str] = field(default_factory=list)
+    
     def __post_init__(self):
         self.output_location = tk.StringVar(value=self._core_config.output_location)
         self.generate_single_barcode = tk.BooleanVar(value=self._core_config.generate_single_barcode)
         self.generate_comparison_barcodes = tk.BooleanVar(value=self._core_config.generate_comparison_barcodes)
         self.sort_parameter = tk.StringVar(value=self._core_config.sort_parameter)
-        self.csv_paths_list = tk.StringVar(value=self._core_config.csv_paths_list)
-
+        self.csv_paths_list = list(self._core_config.csv_paths_list)
     @property
     def config(self) -> AggregationConfig:
         """Get current config from GUI values"""
@@ -301,8 +300,7 @@ class AggregationConfigGUI:
             generate_single_barcode=self.generate_single_barcode.get(),
             generate_comparison_barcodes=self.generate_comparison_barcodes.get(),
             sort_parameter=self.sort_parameter.get(),
-            csv_paths_list=self.csv_paths_list.get(),
-        )
+            csv_paths_list=self.csv_paths_list        )
 
     def update_gui(self, new_config: AggregationConfig):
         """Update GUI from new config values"""
@@ -312,6 +310,40 @@ class AggregationConfigGUI:
         self.generate_comparison_barcodes.set(new_config.generate_comparison_barcodes)
         self.sort_parameter.set(new_config.sort_parameter)
         self.csv_paths_list.set(new_config.csv_paths_list)
+
+@dataclass
+class ComparisonConfigGUI:
+    """Auto-generated GUI wrapper for ComparisonConfig"""
+    _core_config: ComparisonConfig = field(default_factory=ComparisonConfig)
+
+    csv_location: tk.StringVar = field(init=False)
+    first_comparison_metric: tk.StringVar = field(init=False)
+    second_comparison_metric: tk.StringVar = field(init=False)
+    output_location: tk.StringVar = field(init=False)
+
+    def __post_init__(self):
+        self.csv_location = tk.StringVar(value=self._core_config.csv_location)
+        self.first_comparison_metric = tk.StringVar(value=self._core_config.first_comparison_metric)
+        self.second_comparison_metric = tk.StringVar(value=self._core_config.second_comparison_metric)
+        self.output_location = tk.StringVar(value=self._core_config.output_location)
+
+    @property
+    def config(self) -> ComparisonConfig:
+        """Get current config from GUI values"""
+        return ComparisonConfig(
+            csv_location=self.csv_location.get(),
+            first_comparison_metric=self.first_comparison_metric.get(),
+            second_comparison_metric=self.second_comparison_metric.get(),
+            output_location=self.output_location.get(),
+        )
+
+    def update_gui(self, new_config: ComparisonConfig):
+        """Update GUI from new config values"""
+        self._core_config = new_config
+        self.csv_location.set(new_config.csv_location)
+        self.first_comparison_metric.set(new_config.first_comparison_metric)
+        self.second_comparison_metric.set(new_config.second_comparison_metric)
+        self.output_location.set(new_config.output_location)
 
 @dataclass
 class BarcodeConfigGUI:

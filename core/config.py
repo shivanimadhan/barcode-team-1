@@ -53,6 +53,21 @@ class AggregationConfig(BaseConfig):
     csv_paths_list: List[str] = field(default_factory=list)
 
 @dataclass
+class ComparisonConfig(BaseConfig):
+    """BARCODE CSV post-processing parameter comparison configuration"""
+
+    csv_location: str = ""
+    first_comparison_metric: str = ""
+    second_comparison_metric: str = ""
+    output_location: str = ""
+
+@dataclass
+class OutputConfig(BaseConfig):
+    """BARCODE output configuration"""
+
+    analyzed_metrics_list: List[str] = field(default_factory=list)
+
+@dataclass
 class ChannelConfig(BaseConfig):
     """Channel selection and processing configuration."""
     parse_all_channels: bool = False
@@ -63,8 +78,10 @@ class ReaderConfig(BaseConfig):
     accept_dim_channels: bool = False
     accept_dim_images: bool = False
     binarization: bool = False
-    flow: bool = False
+    exposure_time: float = 1.0     # --exposure_time
     intensity_distribution: bool = False
+    optical_flow: bool = False
+    um_pixel_ratio: float = 1.0     # --um_pixel_ratio
     verbose: bool = False
 
 @dataclass
@@ -84,8 +101,6 @@ class OpticalFlowConfig(BaseConfig):
     frame_step: int = 10    # --of_f_step
     win_size: int = 32    # --win_size
     downsample: int = 8    # --downsample
-    um_pixel_ratio: float = 1.0     # --um_pixel_ratio
-    exposure_time: float = 1.0     # --exposure_time
     percentage_frames_evaluated: float = 0.05 # --of_pf_evaluation
 
 @dataclass
@@ -229,6 +244,7 @@ GUI_CONFIG_CLASSES = [
     IntensityDistributionConfig,
     PreviewConfig,
     AggregationConfig,
+    ComparisonConfig,
 ]
 
 
