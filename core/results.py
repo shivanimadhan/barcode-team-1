@@ -49,6 +49,11 @@ class BinarizationResults(ResultsBase):
     max_void_percent_change: float = np.nan
     island_size_initial: float = np.nan
     island_size_initial2: float = np.nan
+    island_anisotropy: float = np.nan
+    mean_island_size: float = np.nan
+    total_island_size: float = np.nan
+    mean_island_separation: float = np.nan
+    island_correlation_length: float = np.nan
 
     @classmethod
     def get_metrics(cls) -> List[Metrics]:
@@ -60,6 +65,11 @@ class BinarizationResults(ResultsBase):
             Metrics.MAX_VOID_AREA_CHANGE,
             Metrics.ISLAND_MAX_AREA_INITIAL,
             Metrics.ISLAND_MAX_AREA_INITIAL2,
+            Metrics.ISLAND_ANISOTROPY,
+            Metrics.ISLAND_MEAN_AREA,
+            Metrics.ISLAND_TOTAL_AREA,
+            Metrics.ISLAND_DISTANCE,
+            Metrics.ISLAND_CORRELATION,
         ]
 
     @classmethod
@@ -72,6 +82,11 @@ class BinarizationResults(ResultsBase):
             Units.PERCENT_CHANGE,
             Units.PERCENT_FOV,
             Units.PERCENT_FOV,
+            Units.NONE,
+            Units.PERCENT_FOV,
+            Units.PERCENT_FOV,
+            Units.CORRELATION,
+            Units.CORRELATION,
         ]
 
     def get_data(self) -> List[float]:
@@ -83,6 +98,11 @@ class BinarizationResults(ResultsBase):
             self.max_void_percent_change,
             self.island_size_initial,
             self.island_size_initial2,
+            self.island_anisotropy,
+            self.mean_island_size,
+            self.total_island_size,
+            self.mean_island_separation,
+            self.island_correlation_length,
         ]
 
 
@@ -94,6 +114,7 @@ class FlowResults(ResultsBase):
     delta_speed: float = np.nan
     mean_theta: float = np.nan
     mean_sigma_theta: float = np.nan
+    velocity_correlation_length: float = np.nan
 
     @classmethod
     def get_metrics(cls) -> List[Metrics]:
@@ -102,6 +123,7 @@ class FlowResults(ResultsBase):
             Metrics.DELTA_SPEED,
             Metrics.MEAN_THETA,
             Metrics.MEAN_SIGMA_THETA,
+            Metrics.VELOCITY_CORRELATION,
         ]
 
     @classmethod
@@ -111,6 +133,7 @@ class FlowResults(ResultsBase):
             Units.SPEED,
             Units.DIRECTION,
             Units.DIRECTION,
+            Units.CORRELATION
         ]
 
     def get_data(self) -> List[float]:
@@ -119,6 +142,7 @@ class FlowResults(ResultsBase):
             self.delta_speed,
             self.mean_theta,
             self.mean_sigma_theta,
+            self.velocity_correlation_length
         ]
 
 

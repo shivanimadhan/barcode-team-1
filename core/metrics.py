@@ -15,12 +15,18 @@ class Metrics(Enum):
     MAX_VOID_AREA_CHANGE = "Maximum Void Area Change"
     ISLAND_MAX_AREA_INITIAL = "Initial Maximum Island Area"
     ISLAND_MAX_AREA_INITIAL2 = "Initial 2nd Maximum Island Area"
+    ISLAND_ANISOTROPY = "Mean Island Anisotropy"
+    ISLAND_MEAN_AREA = "Mean Island Area"
+    ISLAND_TOTAL_AREA = "Total Island Area"
+    ISLAND_DISTANCE = "Mean Island Separation"
+    ISLAND_CORRELATION = "Mean Correlation Length"
 
     # Metrics for optical flow analysis
-    MEAN_SPEED = "Mean Speed"
+    MEAN_SPEED = "Speed"
     DELTA_SPEED = "Speed Change"
-    MEAN_THETA = "Mean Direction"
-    MEAN_SIGMA_THETA = "Mean Direction Standard Deviation"
+    MEAN_THETA = "Mean Flow Direction"
+    MEAN_SIGMA_THETA = "Directional Spread"
+    VELOCITY_CORRELATION = "Mean Velocity Correlation Length"
 
     # Metrics for intensity distribution comparison
     MAX_KURTOSIS = "Max Kurtosis"
@@ -45,6 +51,7 @@ class Units(Enum):
     SPEED: str = "um/s"
     DIRECTION: str = "rads"
     PERCENT_FRAMES: str = "% of Frames"
+    CORRELATION: str = "um"
 
 
 def get_data_limits(
@@ -70,16 +77,23 @@ def get_data_limits(
     def dynamic_limits(_data: np.ndarray, threshold: float) -> List[float]:
         """Calculate dynamic limits based on the data and a threshold."""
         _limits = [np.nanmin(_data), np.nanmax(_data)]
-        
         if threshold < _limits[0]:
             _limits[0] = threshold
         elif threshold > _limits[1]:
             _limits[1] = threshold
+        
+        if _limits[0] == _limits[1]:
+            if _limits[0] == 0:
+                _limits[1] = 1
+            elif _limits[0] > 0:
+                _limits[0] = 0
+            else:
+                _limits[1] = 0
+
         return _limits
 
     # Assign limits based on metrics and units
     for i, (metric, unit) in enumerate(zip(metrics, units)):
-
         if unit == Units.PERCENT_FRAMES or unit == Units.PERCENT_FOV:
             limits.append(binarized_static_limits)
         elif unit == Units.DIRECTION:
@@ -89,11 +103,13 @@ def get_data_limits(
                 limits.append(direction_static_limits)
         elif unit == Units.PERCENT_CHANGE:
             limits.append(dynamic_limits(data[:, i], 1))
-        elif unit == Units.SPEED:
-            limits.append([0, np.nanmax(data[:, i])])
+        elif unit == Units.SPEED or unit == Units.CORRELATION:
+            if metric == Metrics.DELTA_SPEED:
+                limits.append(dynamic_limits(data[:, i], 0))
+            else:
+                limits.append([0, np.nanmax(data[:, i])])
         elif unit == Units.NONE:
             limits.append(dynamic_limits(data[:, i], 0))
         else:
             raise ValueError(f"Unsupported unit: {unit}")
-
     return limits

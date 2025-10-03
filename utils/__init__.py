@@ -49,6 +49,15 @@ def check_channel_dim(image):
     mean_intensity = np.mean(image)
     return 2 * np.exp(-1) * mean_intensity <= min_intensity
 
+def radial_average(frame: np.ndarray):
+    nx, ny = frame.shape
+    mask = np.ones_like(frame)
+    dists = np.sqrt(np.arange(-1*nx/2, nx/2)[:,None]**2 + np.arange(-1*ny/2, ny/2)[None,:]**2)
+    bins = np.arange(max(nx,ny)/2+1)
+    histo_of_bins = np.histogram(dists[mask==1], bins)[0]
+    h = np.histogram(dists[mask==1], bins, weights=frame[mask==1])[0]
+    return h/histo_of_bins
+
 __all__ = [
     "Timer",
     "vprint",
