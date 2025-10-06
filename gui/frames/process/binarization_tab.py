@@ -87,8 +87,8 @@ def create_binarization_frame(
     sample_file_combobox.grid(row=row_b, column=1, padx=5, pady=5)
     row_b += 1
 
-    # Live preview setup
-    preview_title = tk.Label(frame, text="Dynamic preview of first-frame binarization:")
+    ## Image Binarization Live Preview ##
+    preview_title = tk.Label(frame, text="Image Binarization Dynamic Preview")
     preview_title.grid(
         row=row_b, column=0, columnspan=3, padx=5, pady=(10, 2), sticky="w"
     )
@@ -103,7 +103,7 @@ def create_binarization_frame(
     )
     row_b += 1
 
-    # Get background color for matplotlib figures
+    # Matplotlib figure placeholder
     root = parent.winfo_toplevel()
     bg_name = root.cget("bg")
     r, g, b = root.winfo_rgb(bg_name)
@@ -116,7 +116,8 @@ def create_binarization_frame(
 
     canvas_orig = FigureCanvasTkAgg(fig_orig, master=frame)
     canvas_orig.draw()
-    canvas_orig.get_tk_widget().grid(row=row_b, column=0, padx=5, pady=(10, 5))
+    canvas_orig.get_tk_widget().grid(
+        row=row_b, column=0, padx=5, pady=(10, 5))
     im_orig = ax_orig.imshow(np.zeros((10, 10)), cmap="gray")
     fig_orig.tight_layout()
 
@@ -128,7 +129,8 @@ def create_binarization_frame(
 
     canvas_bin = FigureCanvasTkAgg(fig_bin, master=frame)
     canvas_bin.draw()
-    canvas_bin.get_tk_widget().grid(row=row_b, column=1, padx=5, pady=(10, 5))
+    canvas_bin.get_tk_widget().grid(
+        row=row_b, column=1, padx=5, pady=(10, 5))
     ax_bin.imshow(np.zeros((10, 10)), cmap="gray")
     fig_bin.tight_layout()
 

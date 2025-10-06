@@ -45,11 +45,18 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         frame, textvariable=cp.sample_file, state="disabled", width=30
     )
     sample_file_combobox.grid(row=row_c, column=1, padx=5, pady=5)
-    
-    # Intensity distribution live preview 
     row_c += 1
-    tk.Label(frame, text="Intensity Distribution Preview (First vs Last Frame)").grid(
+
+    ## Intensity Distribution Live Preview ##    
+    preview_title = tk.Label(frame, text="Intensity Distribution Dynamic Preview")
+    preview_title.grid(
         row=row_c, column=0, columnspan=2, sticky="w", padx=5, pady=(10,2)
+    )
+    row_c += 1
+
+    # Preview labels
+    tk.Label(frame, text="Intensity Distribution").grid(
+        row = row_c, column = 0, padx = 5, pady = 2, sticky = "n"
     )
     row_c += 1
 
@@ -57,21 +64,21 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
     root = parent.winfo_toplevel()
     bg_name = root.cget('bg')
     r, g, b = root.winfo_rgb(bg_name)
-    bg_color = (r/65535, g/65535, b/65535)
-
-    fig = Figure(figsize=(6, 3.5), facecolor=bg_color)
+    bg_color = (r / 65535, g / 65535, b / 65535)
+    # Distribution image figure
+    fig = Figure(figsize=(3, 3), facecolor=bg_color)
     ax  = fig.add_subplot(111)
     ax.set_facecolor(bg_color)
-    ax.set_xlabel("Pixel intensity value")
+    ax.set_xlabel("Pixel Intensity Value")
     ax.set_ylabel("Probability")
     ax.grid(False)
     fig.subplots_adjust(right=0.75, bottom=0.25)
 
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
-    canvas_widget = canvas.get_tk_widget()
-
-    _canvas_grid = dict(row=row_c, column=0, columnspan=2, padx=5, pady=(5,10), sticky="w")
+    canvas.get_tk_widget().grid(
+        row=row_c, column=0, columnspan=2, padx=5, pady=(10,5))
+    fig.tight_layout()
     row_c += 1
 
     preview_label = tk.Label(
@@ -82,31 +89,26 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
 
     # Show preview label by default
     preview_label.grid(row=row_c, column=0, columnspan=2, padx=5, pady=(0,10), sticky="w")
+    row_c += 1
+
+    # Preview functionality
     preview_data = {"first": None, "last": None, "last_idx": None}
 
     def update_preview(*_args):
         initial_frame = preview_data["first"]
         final_frame = preview_data["last"]
         if initial_frame is None or final_frame is None:
-            # Show label, hide canvas
             preview_label.grid()
-            try:
-                canvas_widget.grid_remove()
-            except Exception:
-                pass
-
             ax.clear()
             ax.set_facecolor(bg_color)
-            ax.set_xlabel("Pixel Intensity Value")
-            ax.set_ylabel("Probability")
+            ax.axis("off")
             canvas.draw()
+            preview_label.config(
+                image="", text="Upload file to see intensity distribution preview."
+            )
             return
 
         preview_label.grid_remove()
-        try:
-            canvas_widget.grid(**_canvas_grid)
-        except Exception:
-            pass
         
         bin_number = cd.bin_size.get()
         noise_threshold = cd.noise_threshold.get()
@@ -184,6 +186,7 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
     cd.noise_threshold.trace_add("write", update_preview)
     ci.dir_path.trace_add("write", update_sample_file_options)
 
+    row_c += 1
 
     tk.Label(frame, text="Frame Step").grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
     f_step_spin = ttk.Spinbox(
