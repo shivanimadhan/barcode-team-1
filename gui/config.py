@@ -284,14 +284,15 @@ class AggregationConfigGUI:
     generate_single_barcode: tk.BooleanVar = field(init=False)
     generate_comparison_barcodes: tk.BooleanVar = field(init=False)
     sort_parameter: tk.StringVar = field(init=False)
-    csv_paths_list: List[str] = field(default_factory=list)
-    
+    csv_paths_list: tk.StringVar = field(init=False)
+
     def __post_init__(self):
         self.output_location = tk.StringVar(value=self._core_config.output_location)
         self.generate_single_barcode = tk.BooleanVar(value=self._core_config.generate_single_barcode)
         self.generate_comparison_barcodes = tk.BooleanVar(value=self._core_config.generate_comparison_barcodes)
         self.sort_parameter = tk.StringVar(value=self._core_config.sort_parameter)
-        self.csv_paths_list = list(self._core_config.csv_paths_list)
+        self.csv_paths_list = tk.StringVar(value=self._core_config.csv_paths_list)
+
     @property
     def config(self) -> AggregationConfig:
         """Get current config from GUI values"""
@@ -300,7 +301,8 @@ class AggregationConfigGUI:
             generate_single_barcode=self.generate_single_barcode.get(),
             generate_comparison_barcodes=self.generate_comparison_barcodes.get(),
             sort_parameter=self.sort_parameter.get(),
-            csv_paths_list=self.csv_paths_list        )
+            csv_paths_list=self.csv_paths_list.get(),
+        )
 
     def update_gui(self, new_config: AggregationConfig):
         """Update GUI from new config values"""
@@ -344,6 +346,26 @@ class ComparisonConfigGUI:
         self.first_comparison_metric.set(new_config.first_comparison_metric)
         self.second_comparison_metric.set(new_config.second_comparison_metric)
         self.output_location.set(new_config.output_location)
+
+@dataclass
+class AnalysisConfigGUI:
+    """Auto-generated GUI wrapper for AnalysisConfig"""
+    _core_config: AnalysisConfig = field(default_factory=AnalysisConfig)
+
+    aggregation: AggregationConfigGUI = field(init=False)
+    comparison: ComparisonConfigGUI = field(init=False)
+
+    def __post_init__(self):
+        self.aggregation = AggregationConfigGUI(self._core_config.aggregation)
+        self.comparison = ComparisonConfigGUI(self._core_config.comparison)
+
+    @property
+    def config(self) -> AnalysisConfig:
+        """Get current config from GUI values"""
+        return AnalysisConfig(
+            aggregation=self.aggregation.config,
+            comparison=self.comparison.config,
+        )
 
 @dataclass
 class BarcodeConfigGUI:

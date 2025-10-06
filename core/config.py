@@ -111,6 +111,11 @@ class IntensityDistributionConfig(BaseConfig):
     percentage_frames_evaluated: float = 0.05 # --id_pf_evaluation
 
 @dataclass
+class AnalysisConfig(BaseConfig):
+    aggregation: AggregationConfig = field(default_factory=AggregationConfig)
+    comparison: ComparisonConfig = field(default_factory=ComparisonConfig)
+
+@dataclass
 class BarcodeConfig(BaseConfig):
     channels: ChannelConfig = field(default_factory=ChannelConfig)
     image_binarization_parameters: BinarizationConfig = field(default_factory=BinarizationConfig)
@@ -245,6 +250,7 @@ GUI_CONFIG_CLASSES = [
     PreviewConfig,
     AggregationConfig,
     ComparisonConfig,
+    AnalysisConfig,
 ]
 
 

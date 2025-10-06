@@ -79,7 +79,7 @@ def load_intensity_frames(file_path, channel = 0):
 
 def load_flow_frames(file_path, channel = 0):
     frames = read_file(file_path, count_list = (1, 1))
-    return [frame[:,:,:,channel] for frame in frames]
+    return frames[:,:,:,channel]
 
 def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
     """Read results from a CSV file into a list of ChannelResults."""
