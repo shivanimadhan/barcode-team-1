@@ -103,13 +103,14 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
 
     csvwriter, csvfile = None, None
     if out_config.save_rds:
-        from visualization import write_binarization_rds
+        from visualization import write_binarization_rds, write_correlation_rds
         filename = os.path.join(name, 'BinarizationData.csv')
         csvwriter, csvfile = setup_csv_writer(filename)
+        filename_scorr = os.path.join(name, 'StructuralImageAutocorrelation.csv')
+        scorr_csvwriter, scorr_csvfile = setup_csv_writer(filename_scorr)
     if out_config.save_visualizations:
         from visualization import save_binarization_visualization
         from visualization import save_binarization_plots
-
         
     void_area_lst = []
     island_area_lst = []
@@ -118,7 +119,7 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
     mean_island_area_lst = []
     mean_island_distance_lst = []
     mean_anisotropy_lst = []
-    correlation_rad_avg_lst = []
+    correlation_lengths = []
     connected_lst = []
 
     correlation_max = int(video.shape[1]/2 * binning_factor)
@@ -137,6 +138,11 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
         max_void_area = find_largest_void(new_frame)
         max_island_area, max_island_area2, total_island_area, mean_island_area, island_distance, anisotropy = find_island_properties(new_frame)
         _, rad_avg = structural_image_autocorrelation(new_frame)
+        rad_avg = rad_avg[:correlation_max]
+        xvalues = np.arange(len(rad_avg)) * um_pixel_ratio * binning_factor
+        correlation_length = flatten(xvalues[np.argwhere(rad_avg > np.exp(-1))])[0] if np.argwhere(rad_avg > np.exp(-1)).any() else xvalues[-1]
+        if out_config.save_rds:
+            write_correlation_rds(scorr_csvwriter, frame_idx, xvalues, rad_avg)
 
         void_area_lst.append(max_void_area)
         island_area_lst.append(max_island_area)
@@ -146,13 +152,15 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
         mean_island_distance_lst.append(island_distance)
         mean_anisotropy_lst.append(anisotropy)
         connected_lst.append(check_span(new_frame))
-        correlation_rad_avg_lst.append(rad_avg[:correlation_max])
+        correlation_lengths.append(correlation_length)
 
     if csvfile:
         csvfile.close()
+    if scorr_csvfile:
+        scorr_csvfile.close()
     
-    correlation_rad_avg_lst = np.array(correlation_rad_avg_lst)
-    correlation_length, g_r_list = calculate_mean_correlation_length(correlation_rad_avg_lst, um_pixel_ratio, binning_factor, out_config.save_rds)
+    correlation_lengths = np.array(correlation_lengths)
+    mean_correlation_length = np.mean(correlation_lengths)
 
     start_eval_index = int(np.ceil(len(void_area_lst)*frame_eval_percent))
     final_eval_index = len(void_area_lst) - start_eval_index
@@ -194,7 +202,7 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
         mean_island_size=mean_island_area,
         total_island_size=total_island_area, 
         mean_island_separation=mean_island_distance, 
-        island_correlation_length=correlation_length
+        island_correlation_length=mean_correlation_length
     )
 
     return fig, results

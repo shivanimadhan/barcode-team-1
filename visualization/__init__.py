@@ -9,8 +9,8 @@ from visualization.analysis import (
 from visualization.rds import (
     write_binarization_rds,
     write_flow_field_rds,
-    write_intensity_distribution_rds
-
+    write_intensity_distribution_rds,
+    write_correlation_rds,
 )
 
 from visualization.barcode import generate_combined_barcode

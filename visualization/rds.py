@@ -24,3 +24,14 @@ def write_intensity_distribution_rds(csvwriter, frame_intensities: np.ndarray, f
     csvwriter.writerow(frame_probabilities)
     csvwriter.writerow([])
     return
+
+def write_correlation_rds(csvwriter, frame_pair: tuple[int, int] | int, xvalues: list[float], radial_average_lst: list[float]):
+    if isinstance(frame_pair, tuple):
+        frame_pair_str = f"Flow Field {frame_pair[0]}-{frame_pair[1]} Velocity Correlation"
+    else:
+        frame_pair_str = f"Frame {frame_pair} Structural Correlation"
+    csvwriter.writerow([frame_pair_str])
+    csvwriter.writerow(['r'] + xvalues)
+    csvwriter.writerow(['C(v(r))'] + radial_average_lst)
+    csvwriter.writerow([])
+    return

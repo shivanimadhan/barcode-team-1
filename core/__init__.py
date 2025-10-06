@@ -16,6 +16,8 @@ from core.config import (
     BarcodeConfig,
     PreviewConfig,
     AggregationConfig,
+    AnalysisConfig,
+    ComparisonConfig,
     BarcodeConfig,
 )
 
@@ -43,6 +45,8 @@ __all__ = [
     "BarcodeConfig",
     "PreviewConfig",
     "AggregationConfig",
+    "ComparisonConfig",
+    "AnalysisConfig",
     "ResultsBase",
     "BinarizationResults",
     "FlowResults",
