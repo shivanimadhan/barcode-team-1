@@ -3,8 +3,8 @@ import tkinter as tk
 
 # import GUI pages directly
 from gui.pages.home_page import create_home_page
-from gui.pages.process_page import create_process_page
-from gui.pages.combine_page import create_combine_page
+from gui.pages.processing_page import create_process_page
+from gui.pages.analysis_page import create_combine_page
 
 # optional: if setup_main_window is in another file, import directly
 from gui.window import setup_main_window, setup_scrollable_container  # or wherever it lives

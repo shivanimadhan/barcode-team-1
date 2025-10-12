@@ -10,13 +10,12 @@ from utils import vprint
 def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config: BarcodeConfig, output_dir: str, fail_file_loc: str) -> Tuple[ChannelResults, List[plt.Figure]]:
     results = ChannelResults(filepath=filepath, channel=channel)
     figures = []
-
     video = file[:,:,:, channel]
     if (video == 0).all():
         vprint('Video appears to be blank, please check channel manually.')
         return results, figures
 
-    if config.reader.binarization:
+    if config.modules.image_binarization:
         try:
             bfig, binarization_results = analyze_binarization(
                 video, output_dir, config.image_binarization_parameters, config.reader, config.writer)
@@ -30,7 +29,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
                 )
 
     # Run optical flow analysis
-    if config.reader.optical_flow:
+    if config.modules.optical_flow:
         try:
             results.flow = analyze_optical_flow(video, output_dir, config.optical_flow_parameters, config.reader, config.writer)
         except Exception as e:
@@ -40,7 +39,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
                 )
 
     # Run intensity distribution analysis
-    if config.reader.intensity_distribution:
+    if config.modules.intensity_distribution:
         try:
             ifig, intensity_results = analyze_intensity_distribution(
                 video, output_dir, config.intensity_distribution_parameters, config.writer
