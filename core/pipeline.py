@@ -59,7 +59,7 @@ def save_analysis_results(
             try:
                 results_to_csv(all_results, csv_path, just_metrics=False)
             except:
-                counter = 2
+                counter = 1
                 while os.path.exists(csv_path):
                     counter += 1
                     csv_path = os.path.join(base_path, f"{base_name} Summary ({counter}).csv")
@@ -152,10 +152,7 @@ def process_single_file(
 
 
 def process_multiple_files(
-    files_to_process: List[str],
-    config: BarcodeConfig,
-    ff_loc: str,
-    timer: Timer,
+    files_to_process: List[str], config: BarcodeConfig, ff_loc: str, timer: Timer,
 ) -> List[ChannelResults]:
     """
     Process a list of files and return collected results.
@@ -165,22 +162,24 @@ def process_multiple_files(
     file_itr = 1
 
     for file_path in files_to_process:
-
         try:
-            results, file_itr = process_single_file(
-                file_path, config, ff_loc, file_itr, total_files
-            )
+            results, file_itr = process_single_file(file_path, config, ff_loc, file_itr, total_files)
         except TypeError as e:
             if "BARCODE" in str(e):
                 continue
             print(e)
             continue
         except Exception as e:
+            print(f"Exception processing file: {file_path}")
+            print(f"{type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             with open(ff_loc, "a", encoding="utf-8") as log_file:
                 log_file.write(f"File: {file_path}, Exception: {str(e)}\n")
             continue
 
         if results == None:
+            print("No results computed.")
             continue
 
         for result in results:
@@ -212,12 +211,8 @@ def run_analysis(root_dir: str, config: BarcodeConfig) -> None:
 
     all_results = process_multiple_files(files_to_process, config, ff_loc, timer)
 
-    message = "Time Elapsed" + (
-        " to Process Files" if is_single_file else " to Process Folder"
-    )
+    message = "Time Elapsed" + (" to Process Files" if is_single_file else " to Process Folder")
     timer.log_time_since_start(message)
     timer.stop()
 
-    save_analysis_results(
-        all_results, base_path, base_name, config, ff_loc, is_single_file
-    )
+    save_analysis_results(all_results, base_path, base_name, config, ff_loc, is_single_file)
