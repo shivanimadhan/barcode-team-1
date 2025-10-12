@@ -1,11 +1,13 @@
 import csv
 import os
 import warnings
+import numpy as np
 from typing import Dict, List, Optional, TypeAlias, TypeVar
 
-from core import ResultsBase, sort_channel_results_by_metric
+from core import ChannelResults, ResultsBase, Metrics, sort_channel_results_by_metric
 from utils.reader import read_csv_to_channel_results
-from visualization.barcode import generate_combined_barcode
+from visualization.barcode import generate_combined_barcode, generate_comparison_barcodes
+from core.config import ComparisonConfig
 
 warnings.filterwarnings("ignore")
 
@@ -99,8 +101,9 @@ def generate_aggregate_csv(
     if sort_metric:
         sort_channel_results_by_metric(all_results, sort_metric)
 
-    # Write aggregate CSV using the clean writer
-    results_to_csv(all_results, output_csv, just_metrics=False)
+    if not (len(csv_files) == 1 and csv_files[0] == output_csv):
+        # Write aggregate CSV using the clean writer
+        results_to_csv(all_results, output_csv, just_metrics=False)
 
     # Generate barcode if requested
     if gen_barcode:
@@ -108,3 +111,67 @@ def generate_aggregate_csv(
         generate_combined_barcode(
             all_results, barcode_path, separate_channels=separate_channels
         )
+
+def compare_multiple_csvs(
+    csv_files: List[str],
+    sort_metric: Optional[str] = None,
+    separate_channels: bool = False,
+) -> None:
+    """
+    Clean version of aggregate CSV generation using structured data.
+
+    Args:
+        csv_files: List of CSV file paths to aggregate
+        sort_metric: Optional metric name to sort by (e.g. "Mean Speed")
+        separate_channels: Whether to create separate barcode figures per channel
+    """
+
+    if not csv_files:
+        return
+
+    all_results = []
+
+    # Read each CSV file back into ChannelResults
+    for csv_file in csv_files:
+        try:
+            results = read_csv_to_channel_results(csv_file)
+            if sort_metric:
+                sort_channel_results_by_metric(results, sort_metric)
+            all_results.append(results)
+        except Exception as e:
+            print(f"Warning: Could not read {csv_file}: {e}")
+            continue
+
+    if not all_results:
+        print("No valid data found in CSV files")
+        return
+    
+    barcode_list = [csv_path.replace(".csv", " Barcode") for csv_path in csv_files]
+    
+    generate_comparison_barcodes(csv_files, barcode_list, separate_channels)
+
+def create_metric_comparison(
+    compare_config: ComparisonConfig
+) -> None:
+    csv_file = compare_config.csv_location
+    output_file = compare_config.output_location
+    first_metric = compare_config.first_comparison_metric
+    second_metric = compare_config.second_comparison_metric
+    if not (csv_file and output_file):
+        return
+    results = read_csv_to_channel_results(csv_file)
+    metrics = ChannelResults.get_metrics()
+    file_metric = metrics[0]
+    first_metric = [metric for metric in metrics if metric.value == first_metric][0]
+    second_metric = [metric for metric in metrics if metric.value == second_metric][0]
+    files = [result.get_dict_data()[file_metric] for result in results]
+    param1 = [result.get_dict_data()[first_metric] for result in results]
+    param2 = [result.get_dict_data()[second_metric] for result in results]
+    headers = ["File", first_metric.value, second_metric.value]
+    with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(headers)
+        for file, p1, p2 in zip(files, param1, param2):
+            if p1 == np.nan or p2 == np.nan:
+                continue
+            writer.writerow([file, p1, p2])
