@@ -35,11 +35,11 @@ def create_barcode_frame(
             filetypes=[("CSV Files", "*.csv")], title="Select one or more CSV files"
         )
         if chosen:
-            ca.csv_paths_list = []
+            ca.csv_paths_list.clear()
             ca.csv_paths_list.extend(chosen)
             csv_label.config(text=f"{len(chosen)} CSV files selected")
         else:
-            ca.csv_paths_list.set("")
+            ca.csv_paths_list.clear()
             csv_label.config(text="No files selected")
 
     tk.Button(frame, text="Browse CSV Files...", command=browse_csv_files).grid(
@@ -73,6 +73,11 @@ def create_barcode_frame(
     tk.Checkbutton(
         frame, text="Generate Aggregate Barcode", variable=ca.generate_single_barcode
     ).grid(row=row_ba, column=0, sticky="w", padx=5, pady=5)
+
+    # Generate comparison barcode
+    tk.Checkbutton(
+        frame, text="Generate Barcodes for Comparison", 
+        variable=ca.generate_comparison_barcodes).grid(row = row_ba, column=1, sticky="w", padx=5, pady=5)
     row_ba += 1
 
     # Metric sort

@@ -20,8 +20,15 @@ from gui.config import (
 
 from gui.window import setup_log_window, setup_scrollable_container
 
+
 def create_tabs(parent, config: BarcodeConfigGUI, input_config: InputConfigGUI, 
                 preview_config: PreviewConfigGUI, analysis_config: AnalysisConfigGUI):
+    def on_tab_selection(event):
+        selected_tab = notebook.tab(notebook.select(), 'text')
+        if selected_tab == "Barcode Generator & CSV Aggregator":
+            input_config.mode.set("agg")
+        elif selected_tab == "Barcode Metric Comparison":
+            input_config.mode.set("comp")
     notebook = ttk.Notebook(parent, takefocus=0)
     aggregation_config = analysis_config.aggregation
     comparison_config = analysis_config.comparison
@@ -31,6 +38,7 @@ def create_tabs(parent, config: BarcodeConfigGUI, input_config: InputConfigGUI,
     comparison_frame = create_comparison_frame(notebook, config, comparison_config)
     notebook.add(barcode_frame, text="Barcode Generator & CSV Aggregator")
     notebook.add(comparison_frame, text = "Barcode Metric Comparison")
+    notebook.bind("<<NotebookTabChanged>>", on_tab_selection)
 
     return notebook
 
@@ -43,23 +51,16 @@ def create_processing_worker(
     aggregation_config = analysis_config.aggregation
     comparison_config = analysis_config.comparison
 
-    if input_config.configuration_file:
-        try:
-            config = BarcodeConfig.load_from_yaml(input_config.configuration_file)
-        except Exception as e:
-            messagebox.showerror("Error reading config file", str(e))
-            return
-
     def worker():
         try:
             mode = input_config.mode
-
             if mode == "agg":
-                from utils.writer import generate_aggregate_csv
+                from utils.writer import generate_aggregate_csv, compare_multiple_csvs
 
                 # Handle CSV aggregation
                 combined_location = aggregation_config.output_location
                 generate_agg_barcode = aggregation_config.generate_single_barcode
+                generate_comparison_barcodes = aggregation_config.generate_comparison_barcodes
                 sort_param = aggregation_config.sort_parameter
                 csv_paths = aggregation_config.csv_paths_list
 
@@ -71,34 +72,17 @@ def create_processing_worker(
                 if not combined_location:
                     messagebox.showerror("Error", "No aggregate location specified.")
                     return
+                if generate_comparison_barcodes:
+                    compare_multiple_csvs(csv_paths, sort_choice)
 
                 sort_choice = None if sort_param == "Default" else sort_param
                 generate_aggregate_csv(
                     csv_paths, combined_location, generate_agg_barcode, sort_choice
                 )
 
-            else:
-                from core.pipeline import run_analysis
-
-                # Handle file/directory processing
-                file_path = input_config.file_path
-                dir_path = input_config.dir_path
-
-                if not (dir_path or file_path):
-                    messagebox.showerror(
-                        "Error", "No file or directory has been selected."
-                    )
-                    return
-
-                channels = config.channels.parse_all_channels
-                channel_selection = config.channels.selected_channel
-                if not (channels or (channel_selection is not None)):
-                    messagebox.showerror("Error", "No channel has been specified.")
-                    return
-
-                dir_name = dir_path if dir_path else file_path
-
-                run_analysis(dir_name, config)
+            elif mode == "comp":
+                from utils.writer import create_metric_comparison
+                create_metric_comparison(comparison_config)
 
         except Exception as e:
             print(f"Error during processing: {e}")
@@ -127,10 +111,10 @@ def create_combine_page(parent, switch_page):
         # Convert GUI configs to pure data configs
         config = gui_config.config
         input_config = gui_input_config.config
-        input_config.mode = "agg"
-        aggregation_config = gui_analysis_config.aggregation.config
+        # input_config.mode = "agg"
+        analysis_config = gui_analysis_config.config
 
-        worker = create_processing_worker(config, input_config, aggregation_config)
+        worker = create_processing_worker(config, input_config, analysis_config)
         threading.Thread(target=worker, daemon=True).start()
 
     back_button = ttk.Button(frame, text="← Back", command=lambda: switch_page("home"))
@@ -144,7 +128,7 @@ def create_combine_page(parent, switch_page):
         gui_analysis_config,
     )
 
-    run_button = ttk.Button(frame, text="Combine Barcodes", command=on_run)
+    run_button = ttk.Button(frame, text="Analyze BARCODE Data", command=on_run)
     run_button.pack(pady=10)
 
     return frame

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-import threading
+import threading, os
 import traceback
 
 # import tab frame creators directly
@@ -46,62 +46,36 @@ def create_processing_worker(
 ):
     """Create the worker function for processing in background thread"""
 
-    # if input_config.configuration_file:
-    #     try:
-    #         config = BarcodeConfig.load_from_yaml(input_config.configuration_file)
-    #     except Exception as e:
-    #         messagebox.showerror("Error reading config file", str(e))
-    #         return
+    if input_config.configuration_file:
+        try:
+            config = BarcodeConfig.load_from_yaml(input_config.configuration_file)
+        except Exception as e:
+            messagebox.showerror("Error reading config file", str(e))
+            return
 
     def worker():
         try:
             mode = input_config.mode
+            from core.pipeline import run_analysis
 
-            if mode == "agg":
-                from utils.writer import generate_aggregate_csv
+            # Handle file/directory processing
+            file_path = input_config.file_path
+            dir_path = input_config.dir_path
 
-                # Handle CSV aggregation
-                combined_location = aggregation_config.output_location
-                generate_agg_barcode = aggregation_config.generate_barcode
-                sort_param = aggregation_config.sort_parameter
-                csv_paths = aggregation_config.csv_paths_list
-
-                if not csv_paths:
-                    messagebox.showerror(
-                        "Error", "No CSV files selected for aggregation."
-                    )
-                    return
-                if not combined_location:
-                    messagebox.showerror("Error", "No aggregate location specified.")
-                    return
-
-                sort_choice = None if sort_param == "Default" else sort_param
-                generate_aggregate_csv(
-                    csv_paths, combined_location, generate_agg_barcode, sort_choice
+            if not (dir_path or file_path):
+                messagebox.showerror(
+                    "Error", "No file or directory has been selected."
                 )
+                return
 
-            else:
-                from core.pipeline import run_analysis
+            channels = config.channels.parse_all_channels
+            channel_selection = config.channels.selected_channel
+            if not (channels or (channel_selection is not None)):
+                messagebox.showerror("Error", "No channel has been specified.")
+                return
 
-                # Handle file/directory processing
-                file_path = input_config.file_path
-                dir_path = input_config.dir_path
-
-                if not (dir_path or file_path):
-                    messagebox.showerror(
-                        "Error", "No file or directory has been selected."
-                    )
-                    return
-
-                channels = config.channels.parse_all_channels
-                channel_selection = config.channels.selected_channel
-                if not (channels or (channel_selection is not None)):
-                    messagebox.showerror("Error", "No channel has been specified.")
-                    return
-
-                dir_name = dir_path if dir_path else file_path
-
-                run_analysis(dir_name, config)
+            dir_name = dir_path if dir_path else file_path
+            run_analysis(dir_name, config)
 
         except Exception as e:
             print(f"Error during processing: {e}")
@@ -134,13 +108,6 @@ def create_process_page(parent, switch_page):
         config = gui_config.config
         input_config = gui_input_config.config
         aggregation_config = gui_aggregation_config.config
-
-        # print("== RUNNING TEST ==")
-        # print("mode:", gui_input_config.mode.get())
-        # print("file path:", gui_input_config.file_path.get())
-        # print("dir path:", gui_input_config.dir_path.get())
-        # print("parse all channels:", gui_config.channels.parse_all_channels.get())
-        # print("===================")
 
         worker = create_processing_worker(config, input_config, aggregation_config)
         threading.Thread(target=worker, daemon=True).start()
