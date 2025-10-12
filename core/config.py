@@ -9,6 +9,25 @@ from typing import Any, Dict, List
 import yaml
 from abc import ABC
 
+"""
+DEVELOPING GUIDE:
+
+1. Define your configuration options here.
+
+2. Add them to the __init__.py file in the core module to export them.
+
+3. Add them to the `GUI_CONFIG_CLASSES` list at the bottom.
+
+4. Run this file to generate GUI wrappers in the `gui` module.
+
+    python core/_config.py
+    
+5. Use the generated GUI classes in your application.
+
+    `from gui.config import BarcodeConfigGUI as BarcodeGUI`
+
+"""
+
 @dataclass
 class BaseConfig(ABC):
     """Base class for all configuration sections."""
@@ -31,9 +50,14 @@ class InputConfig(BaseConfig):
 
     file_path: str = ""
     dir_path: str = ""
-    mode: str = "file"  # "file", "dir", "agg"
+    mode: str = "file"  # "file", "dir", "agg", "comp"
     configuration_file: str = ""
-    new_param: bool = False
+
+@dataclass
+class ChannelConfig(BaseConfig):
+    """Channel selection and processing configuration."""
+    parse_all_channels: bool = False
+    selected_channel: int = 0  # -3 to 4 range
 
 @dataclass
 class PreviewConfig(BaseConfig):
@@ -57,31 +81,24 @@ class ComparisonConfig(BaseConfig):
     """BARCODE CSV post-processing parameter comparison configuration"""
 
     csv_location: str = ""
-    first_comparison_metric: str = ""
-    second_comparison_metric: str = ""
+    first_comparison_metric: str = "Connectivity"
+    second_comparison_metric: str = "Connectivity"
     output_location: str = ""
 
 @dataclass
-class OutputConfig(BaseConfig):
-    """BARCODE output configuration"""
-
-    analyzed_metrics_list: List[str] = field(default_factory=list)
-
-@dataclass
-class ChannelConfig(BaseConfig):
-    """Channel selection and processing configuration."""
-    parse_all_channels: bool = False
-    selected_channel: int = 0  # -3 to 4 range
+class ModuleConfig(BaseConfig):
+    """Analysis module selection and coordination"""
+    
+    image_binarization: bool = False
+    optical_flow: bool = False
+    intensity_distribution: bool = False
     
 @dataclass
 class ReaderConfig(BaseConfig):
     accept_dim_channels: bool = False
     accept_dim_images: bool = False
-    binarization: bool = False
-    exposure_time: float = 1.0     # --exposure_time
-    intensity_distribution: bool = False
-    optical_flow: bool = False
-    um_pixel_ratio: float = 1.0     # --um_pixel_ratio
+    exposure_time: float = 1.0
+    um_pixel_ratio: float = 1.0
     verbose: bool = False
 
 @dataclass
@@ -92,23 +109,25 @@ class WriterConfig(BaseConfig):
 
 @dataclass
 class BinarizationConfig(BaseConfig):
-    threshold_offset: float = 0.1 # --thresh_offset
-    frame_step: int = 10 # --ib_f_step
-    percentage_frames_evaluated: float = 0.05   # --ib_pf_eval
+    threshold_offset: float = 0.1
+    frame_step: int = 10
+    percentage_frames_evaluated: float = 0.05
+    bin_factor: int = 2
+    enable_physical_units: bool = False
 
 @dataclass
 class OpticalFlowConfig(BaseConfig):
-    frame_step: int = 10    # --of_f_step
-    win_size: int = 32    # --win_size
-    downsample: int = 8    # --downsample
-    percentage_frames_evaluated: float = 0.05 # --of_pf_evaluation
+    frame_step: int = 10
+    win_size: int = 32
+    downsample: int = 8
+    percentage_frames_evaluated: float = 0.05
 
 @dataclass
 class IntensityDistributionConfig(BaseConfig):
-    bin_size: int = 300 # --hist_bin_size
-    frame_step: int = 10    # --id_f_step
-    noise_threshold: float = 5e-4 # --noise_threshold
-    percentage_frames_evaluated: float = 0.05 # --id_pf_evaluation
+    bin_size: int = 300
+    frame_step: int = 10
+    noise_threshold: float = 5e-4
+    percentage_frames_evaluated: float = 0.05
 
 @dataclass
 class AnalysisConfig(BaseConfig):
@@ -120,6 +139,7 @@ class BarcodeConfig(BaseConfig):
     channels: ChannelConfig = field(default_factory=ChannelConfig)
     image_binarization_parameters: BinarizationConfig = field(default_factory=BinarizationConfig)
     intensity_distribution_parameters: IntensityDistributionConfig = field(default_factory=IntensityDistributionConfig)
+    modules: ModuleConfig = field(default_factory=ModuleConfig)
     optical_flow_parameters: OpticalFlowConfig = field(default_factory=OpticalFlowConfig)
     reader: ReaderConfig = field(default_factory=ReaderConfig)
     writer: WriterConfig = field(default_factory=WriterConfig)
@@ -202,14 +222,17 @@ class BarcodeConfig(BaseConfig):
                     read["channel_select"] if read["channel_select"] != "All" else 0
                 ),
             ),
+            modules=ModuleConfig(
+                image_binarization=read["binarization"],
+                optical_flow=read["flow"],
+                intensity_distribution=read["intensity_distribution"],
+            ),
             reader=ReaderConfig(
                 accept_dim_images=read["accept_dim_images"],
                 accept_dim_channels=read["accept_dim_channels"],
-                binarization=read["binarization"],
-                flow=read["flow"],
-                intensity_distribution=read["intensity_distribution"],
+                exposure_time=flow_params["exposure_time"],
+                um_pixel_ratio=flow_params["um_pixel_ratio"],
                 verbose=read["verbose"],
-
             ),
             writer=WriterConfig(
                 save_visualizations=write["save_visualizations"],
@@ -223,10 +246,8 @@ class BarcodeConfig(BaseConfig):
             ),
             optical_flow_parameters=OpticalFlowConfig(
                 downsample=flow_params["downsample"],
-                exposure_time=flow_params["exposure_time"],
                 frame_step=flow_params["frame_step"],
                 percentage_frames_evaluated=flow_params["percentage_frames_evaluated"],
-                um_pixel_ratio=flow_params["um_pixel_ratio"],
                 win_size=flow_params["win_size"],
             ),
             intensity_distribution_parameters=IntensityDistributionConfig(
@@ -250,7 +271,7 @@ GUI_CONFIG_CLASSES = [
     PreviewConfig,
     AggregationConfig,
     ComparisonConfig,
-    AnalysisConfig,
+    ModuleConfig,
 ]
 
 
