@@ -72,9 +72,7 @@ def find_island_properties(frame: np.ndarray):
     return largest_island_area, second_largest_island_area, total_island_area, mean_island_area, mean_island_distance, mean_anisotropy
 
 def structural_image_autocorrelation(frame: np.ndarray):
-    mean = np.mean(frame)
-    stdev = np.std(frame)
-    frame = (frame - mean)/stdev
+    frame = (frame - np.mean(frame))/np.std(frame)
     corr_image = np.real(fftshift(ifft2(fft2(frame)*np.conj(fft2(frame)))))/(frame.shape[0]*frame.shape[1])
     radial_avg = radial_average(corr_image)
     return corr_image, radial_avg
@@ -90,6 +88,15 @@ def calculate_mean_correlation_length(radial_avg_lst: np.ndarray, micron_pixel_r
     correlation_length = flatten(xvalues[np.argwhere(mean_g_r > np.exp(-1))])[0] if np.argwhere(mean_g_r > np.exp(-1)).any() else xvalues[-1]
     return correlation_length, gravgse
 
+def calculate_area_or_percentage(metric: float, img_dimensions: int, 
+                                 convert_units: bool = False, um_pixel_ratio: float = None) -> Tuple[np.ndarray, float]:
+    metric_physical_units, metric_percentage = np.nan, np.nan
+    metric_percentage = metric / img_dimensions
+    if convert_units:
+        metric_physical_units = metric * um_pixel_ratio
+    return metric_physical_units, metric_percentage
+
+
 def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationConfig, in_config: ReaderConfig, out_config: WriterConfig) -> Tuple[Optional[plt.Figure], BinarizationResults]:
     vprint('Beginning Binarization Analysis')
     num_frames = len(video)
@@ -97,7 +104,8 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
     threshold_offset = bin_config.threshold_offset
     frame_eval_percent = bin_config.percentage_frames_evaluated
     um_pixel_ratio = in_config.um_pixel_ratio
-    binning_factor = 2
+    binning_factor = bin_config.bin_factor
+    convert_units = bin_config.enable_physical_units
     
     frame_indices, frame_step = find_analysis_frames(video, frame_step)
 
@@ -140,9 +148,9 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
         _, rad_avg = structural_image_autocorrelation(new_frame)
         rad_avg = rad_avg[:correlation_max]
         xvalues = np.arange(len(rad_avg)) * um_pixel_ratio * binning_factor
-        correlation_length = flatten(xvalues[np.argwhere(rad_avg > np.exp(-1))])[0] if np.argwhere(rad_avg > np.exp(-1)).any() else xvalues[-1]
+        correlation_length = flatten(xvalues[np.argwhere(rad_avg <= np.exp(-1))])[0] if np.argwhere(rad_avg <= np.exp(-1)).any() else xvalues[-1]
         if out_config.save_rds:
-            write_correlation_rds(scorr_csvwriter, frame_idx, xvalues, rad_avg)
+            write_correlation_rds(scorr_csvwriter, frame_idx, xvalues.tolist(), rad_avg.tolist())
 
         void_area_lst.append(max_void_area)
         island_area_lst.append(max_island_area)
@@ -179,30 +187,36 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
     img_dims = video[0].shape[0] * video[0].shape[1] / (binning_factor ** 2)
     
     max_void_percent_change = np.mean(void_area_lst[final_eval_index:])/void_size_initial
-    void_size_initial = void_size_initial / img_dims
-    max_void_size = average_largest(void_area_lst)/img_dims
+    void_size_initial_quantity, void_size_initial_percent = calculate_area_or_percentage(void_size_initial, img_dims, convert_units, um_pixel_ratio)
+    max_void_size_quantity, max_void_size_percent = calculate_area_or_percentage(average_largest(void_area_lst), img_dims, convert_units, um_pixel_ratio)
     max_island_percent_change = np.mean(island_area_lst[final_eval_index:])/island_size_initial
-    island_size_initial = island_size_initial / img_dims
-    island_size_initial2 = island_size_initial2 / img_dims
-    max_island_size = average_largest(island_area_lst)/img_dims    
+    island_size_initial_quantity, island_size_initial_percent = calculate_area_or_percentage(island_size_initial, img_dims, convert_units, um_pixel_ratio)
+    island_size_initial2_quantity, island_size_initial2_percent = calculate_area_or_percentage(island_size_initial2, img_dims, convert_units, um_pixel_ratio)    
+    max_island_size_quantity, max_island_size_percent = calculate_area_or_percentage(average_largest(island_area_lst), img_dims, convert_units, um_pixel_ratio)    
     connectivity = len([connected for connected in connected_lst if connected == 1])/len(connected_lst)
-    mean_island_area = np.mean(mean_island_area_lst)/img_dims
+    mean_island_area_quantity, mean_island_area_percent = calculate_area_or_percentage(np.mean(mean_island_area_lst), img_dims, convert_units, um_pixel_ratio)
+    total_island_area_quantity, total_island_area_percent = calculate_area_or_percentage(np.mean(total_island_area_lst), img_dims, convert_units, um_pixel_ratio)
     island_anisotropy = np.mean(mean_anisotropy_lst)
-    total_island_area = np.mean(total_island_area_lst)/img_dims
     mean_island_distance = np.mean(mean_island_distance_lst) * um_pixel_ratio
     results = BinarizationResults(
-        spanning = connectivity, 
-        max_island_size = max_island_size, 
-        max_void_size = max_void_size,
+        connectivity = connectivity, 
+        max_island_size = max_island_size_percent, 
+        max_void_size = max_void_size_percent,
         max_island_percent_change = max_island_percent_change, 
         max_void_percent_change = max_void_percent_change,
-        island_size_initial=island_size_initial, 
-        island_size_initial2=island_size_initial2,
+        island_size_initial=island_size_initial_percent, 
+        island_size_initial2=island_size_initial2_percent,
         island_anisotropy=island_anisotropy,
-        mean_island_size=mean_island_area,
-        total_island_size=total_island_area, 
+        mean_island_size=mean_island_area_percent,
+        total_island_size=total_island_area_percent, 
         mean_island_separation=mean_island_distance, 
-        island_correlation_length=mean_correlation_length
+        island_correlation_length=mean_correlation_length,
+        max_island_size_quantity=max_island_size_quantity,
+        max_void_size_quantity=max_void_size_quantity,
+        island_size_initial_quantity=island_size_initial_quantity,
+        island_size_initial2_quantity=island_size_initial2_quantity,
+        mean_island_size_quantity=mean_island_area_quantity,
+        total_island_size_quantity=total_island_area_quantity,
     )
 
     return fig, results

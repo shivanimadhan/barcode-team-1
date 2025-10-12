@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 
 from core import Metrics, Units
+from core.config import BinarizationConfig
 
 
 @dataclass
@@ -36,13 +37,17 @@ class ResultsBase(ABC):
     def to_array(self, **kwargs) -> np.ndarray:
         """Convert results to a NumPy array for easier manipulation."""
         return np.array(self.get_data(**kwargs), dtype=float)
+    
+    def get_dict_data(self, **kwargs) -> np.ndarray:
+        """Convert results to dictionary"""
+        pass
 
 
 @dataclass
 class BinarizationResults(ResultsBase):
     """Results from binarization analysis."""
 
-    spanning: float = np.nan
+    connectivity: float = np.nan
     max_island_size: float = np.nan
     max_void_size: float = np.nan
     max_island_percent_change: float = np.nan
@@ -54,6 +59,13 @@ class BinarizationResults(ResultsBase):
     total_island_size: float = np.nan
     mean_island_separation: float = np.nan
     island_correlation_length: float = np.nan
+
+    max_island_size_quantity: float = np.nan
+    max_void_size_quantity: float = np.nan
+    island_size_initial_quantity: float = np.nan
+    island_size_initial2_quantity: float = np.nan
+    mean_island_size_quantity: float = np.nan
+    total_island_size_quantity: float = np.nan
 
     @classmethod
     def get_metrics(cls) -> List[Metrics]:
@@ -71,6 +83,23 @@ class BinarizationResults(ResultsBase):
             Metrics.ISLAND_DISTANCE,
             Metrics.ISLAND_CORRELATION,
         ]
+    
+    @classmethod
+    def get_physical_metrics(cls) -> List[Metrics]:
+        return [
+            Metrics.CONNECTIVITY,
+            Metrics.ISLAND_MAX_AREA_QUANTITY,
+            Metrics.VOID_MAX_AREA_QUANTITY,
+            Metrics.MAX_ISLAND_AREA_CHANGE,
+            Metrics.MAX_VOID_AREA_CHANGE,
+            Metrics.ISLAND_MAX_AREA_INITIAL_QUANTITY,
+            Metrics.ISLAND_MAX_AREA_INITIAL2_QUANTITY,
+            Metrics.ISLAND_ANISOTROPY,
+            Metrics.ISLAND_MEAN_AREA_QUANTITY,
+            Metrics.ISLAND_TOTAL_AREA_QUANTITY,
+            Metrics.ISLAND_DISTANCE,
+            Metrics.ISLAND_CORRELATION,
+        ]
 
     @classmethod
     def get_units(cls) -> List[Units]:
@@ -85,13 +114,30 @@ class BinarizationResults(ResultsBase):
             Units.NONE,
             Units.PERCENT_FOV,
             Units.PERCENT_FOV,
-            Units.CORRELATION,
-            Units.CORRELATION,
+            Units.LENGTH,
+            Units.LENGTH,
+        ]
+    
+    @classmethod
+    def get_physical_units(cls) -> List[Units]:
+        return [
+            Units.PERCENT_FRAMES,
+            Units.AREA,
+            Units.AREA,
+            Units.PERCENT_CHANGE,
+            Units.PERCENT_CHANGE,
+            Units.AREA,
+            Units.AREA,
+            Units.NONE,
+            Units.AREA,
+            Units.AREA,
+            Units.LENGTH,
+            Units.LENGTH,
         ]
 
     def get_data(self) -> List[float]:
         return [
-            self.spanning,
+            self.connectivity,
             self.max_island_size,
             self.max_void_size,
             self.max_island_percent_change,
@@ -104,6 +150,28 @@ class BinarizationResults(ResultsBase):
             self.mean_island_separation,
             self.island_correlation_length,
         ]
+    
+    def get_physical_data(self) -> List[float]:
+        return [
+            self.connectivity,
+            self.max_island_size_quantity,
+            self.max_void_size_quantity,
+            self.max_island_percent_change,
+            self.max_void_percent_change,
+            self.island_size_initial_quantity,
+            self.island_size_initial2_quantity,
+            self.island_anisotropy,
+            self.mean_island_size_quantity,
+            self.total_island_size_quantity,
+            self.mean_island_separation,
+            self.island_correlation_length,
+        ]
+    
+    def get_dict_data(self) -> dict:
+        return dict(zip(self.get_metrics(), self.get_data()))
+    
+    def get_physical_dict_data(self) -> dict:
+        return dict(zip(self.get_physical_metrics(), self.get_physical_data()))
 
 
 @dataclass
@@ -133,7 +201,7 @@ class FlowResults(ResultsBase):
             Units.SPEED,
             Units.DIRECTION,
             Units.DIRECTION,
-            Units.CORRELATION
+            Units.LENGTH
         ]
 
     def get_data(self) -> List[float]:
@@ -144,6 +212,9 @@ class FlowResults(ResultsBase):
             self.mean_sigma_theta,
             self.velocity_correlation_length
         ]
+    
+    def get_dict_data(self) -> dict:
+        return dict(zip(self.get_metrics(), self.get_data()))
 
 
 @dataclass
@@ -189,6 +260,9 @@ class IntensityResults(ResultsBase):
             self.median_skew_diff,
             self.mode_skew_diff,
         ]
+    
+    def get_dict_data(self) -> dict:
+        return dict(zip(self.get_metrics(), self.get_data()))
 
 
 @dataclass
@@ -219,12 +293,38 @@ class ChannelResults(ResultsBase):
             + IntensityResults.get_metrics()
             + FlowResults.get_metrics()
         )
+    
+    @classmethod
+    def get_physical_metrics(cls, just_metrics: bool = False) -> List[Metrics]:
+        return (
+            (
+                [Metrics.FILEPATH, Metrics.CHANNEL, Metrics.FLAGS]
+                if not just_metrics
+                else []
+            )
+            + BinarizationResults.get_physical_metrics()
+            + IntensityResults.get_metrics()
+            + FlowResults.get_metrics()
+        )
+    
+    @classmethod
+    def get_extended_headers(cls, just_metrics: bool = False) -> List[str]:
+        """Get headers for CSV output."""
+        return [metric.value for metric in cls.get_physical_metrics(just_metrics)]
 
     @classmethod
     def get_units(cls, just_metrics: bool = False) -> List[Units]:
         return (
             ([Units.NONE, Units.NONE, Units.NONE] if not just_metrics else [])
             + BinarizationResults.get_units()
+            + IntensityResults.get_units()
+            + FlowResults.get_units()
+        )
+    
+    def get_physical_units(cls, just_metrics: bool = False) -> List[Units]:
+        return (
+            ([Units.NONE, Units.NONE, Units.NONE] if not just_metrics else [])
+            + BinarizationResults.get_physical_units()
             + IntensityResults.get_units()
             + FlowResults.get_units()
         )
@@ -237,7 +337,45 @@ class ChannelResults(ResultsBase):
         data.extend(self.intensity.get_data())
         data.extend(self.flow.get_data())
         return data
-
+    
+    def get_physical_data(self, just_metrics: bool = False) -> List[float]:
+        data = []
+        if not just_metrics:
+            data = [self.filepath, self.channel, self.dim_channel_flag]
+        data.extend(self.binarization.get_physical_data())
+        data.extend(self.intensity.get_data())
+        data.extend(self.flow.get_data())
+        return data
+    
+    def get_dict_data(self, just_metrics: bool = False) -> dict:
+        binarization_data = self.binarization.get_dict_data()
+        intensity_data = self.intensity.get_dict_data()
+        flow_data = self.flow.get_dict_data()
+        if just_metrics:
+            data = binarization_data | intensity_data | flow_data
+        else:
+            data = {Metrics.FILEPATH: self.filepath,
+                    Metrics.CHANNEL: self.channel,
+                    Metrics.FLAGS: self.dim_channel_flag}
+            data = data | binarization_data | intensity_data | flow_data
+        return data
+    
+    def get_physical_dict_data(self, just_metrics: bool = False) -> dict:
+        binarization_data = self.binarization.get_physical_dict_data()
+        intensity_data = self.intensity.get_dict_data()
+        flow_data = self.flow.get_dict_data()
+        if just_metrics:
+            data = binarization_data | intensity_data | flow_data
+        else:
+            data = {Metrics.FILEPATH: self.filepath,
+                    Metrics.CHANNEL: self.channel,
+                    Metrics.FLAGS: self.dim_channel_flag}
+            data = data | binarization_data | intensity_data | flow_data
+        return data
+    
+    def to_extended_array(self, **kwargs) -> np.ndarray:
+        """Convert results to a NumPy array for easier manipulation."""
+        return np.array(self.get_physical_data(**kwargs), dtype=float)
 
 def sort_channel_results_by_metric(
     results: List[ChannelResults], sort_metric: str

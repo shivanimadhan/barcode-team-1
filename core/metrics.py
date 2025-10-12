@@ -21,6 +21,14 @@ class Metrics(Enum):
     ISLAND_DISTANCE = "Mean Island Separation"
     ISLAND_CORRELATION = "Mean Correlation Length"
 
+    # Physical Units for Binarization Void/Island Metrics
+    ISLAND_MAX_AREA_QUANTITY = "Maximum Island Area Quantity"
+    VOID_MAX_AREA_QUANTITY = "Maximum Void Area Quantity"
+    ISLAND_MAX_AREA_INITIAL_QUANTITY = "Initial Maximum Island Area Quantity"
+    ISLAND_MAX_AREA_INITIAL2_QUANTITY = "Initial 2nd Maximum Island Area Quantity"
+    ISLAND_MEAN_AREA_QUANTITY = "Mean Island Area Quantity"
+    ISLAND_TOTAL_AREA_QUANTITY = "Total Island Area Quantity"
+
     # Metrics for optical flow analysis
     MEAN_SPEED = "Speed"
     DELTA_SPEED = "Speed Change"
@@ -48,10 +56,11 @@ class Units(Enum):
     NONE: str = ""
     PERCENT_FOV: str = "% of FOV"
     PERCENT_CHANGE: str = "Fractional Change"
-    SPEED: str = "um/s"
+    SPEED: str = "μm/s"
     DIRECTION: str = "rads"
     PERCENT_FRAMES: str = "% of Frames"
-    CORRELATION: str = "um"
+    LENGTH: str = "μm"
+    AREA: str = "μm^2"
 
 
 def get_data_limits(
@@ -103,7 +112,7 @@ def get_data_limits(
                 limits.append(direction_static_limits)
         elif unit == Units.PERCENT_CHANGE:
             limits.append(dynamic_limits(data[:, i], 1))
-        elif unit == Units.SPEED or unit == Units.CORRELATION:
+        elif unit in [Units.SPEED, Units.LENGTH, Units.AREA]:
             if metric == Metrics.DELTA_SPEED:
                 limits.append(dynamic_limits(data[:, i], 0))
             else:

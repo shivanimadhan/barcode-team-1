@@ -9,9 +9,11 @@ from gui.config import OpticalFlowConfigGUI, ReaderConfigGUI
 
 def velocity_correlation(flow_field):
     downU, downV, _, _ = flow_field
+    downU = (downU - np.mean(downU)) / np.std(downU)
+    downV = (downV - np.mean(downV)) / np.std(downV)
     corr_v_x = np.real(fftshift(ifft2(fft2(downU)*np.conj(fft2(downU)))))/(downU.shape[0]*downU.shape[1])
     corr_v_y = np.real(fftshift(ifft2(fft2(downV)*np.conj(fft2(downV)))))/(downV.shape[0]*downV.shape[1])
-    corr_mag = np.sqrt(corr_v_x ** 2 + corr_v_y ** 2)
+    corr_mag = 0.5 * (corr_v_x + corr_v_y)
     radial_avg = radial_average(corr_mag)
     return corr_v_x, corr_v_y, radial_avg
 
@@ -84,9 +86,9 @@ def analyze_optical_flow(video: np.ndarray, name: str, flow_config: OpticalFlowC
         v_x_corr, v_y_corr, v_rad_avg = velocity_correlation(flow_field)
         v_rad_avg = v_rad_avg[:correlation_max]
         xvalues = np.arange(len(v_rad_avg)) * um_pix_ratio * downsample
-        correlation_length = flatten(xvalues[np.argwhere(v_rad_avg > np.exp(-1))])[0] if np.argwhere(v_rad_avg > np.exp(-1)).any() else xvalues[-1]
+        correlation_length = flatten(xvalues[np.argwhere(v_rad_avg <= np.exp(-1))])[0] if np.argwhere(v_rad_avg <= np.exp(-1)).any() else xvalues[-1]
         if out_config.save_rds:
-            write_correlation_rds(vcorr_csvwriter, frame_pair, xvalues, v_rad_avg)
+            write_correlation_rds(vcorr_csvwriter, frame_pair, xvalues.tolist(), v_rad_avg.tolist())
 
         if (start, stop) in visualization_flow_fields and out_config.save_visualizations:
             from visualization import save_flow_field_visualization
