@@ -25,7 +25,7 @@ def read_file(filepath, count_list, config: BarcodeConfig = None, accept_dim: bo
         print("File size is too large -- this program does not process files larger than 5 GB.")
         return None
 
-    if filepath.endswith(('.tif', '.tiff', 'avi')):
+    if filepath.endswith(('.tif', '.tiff', 'avi', "mp4")):
         file = iio.imread(filepath)
         file = np.reshape(file, (file.shape + (1,))) if len(file.shape) == 3 else file
         if file.shape[3] != min(file.shape):
@@ -122,7 +122,7 @@ def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
                         channel=int(data[0]),
                         dim_channel_flag=int(data[1]),
                         binarization=BinarizationResults(
-                            spanning=data[2],
+                            connectivity=data[2],
                             max_island_size=data[3],
                             max_void_size=data[4],
                             max_island_percent_change=data[5],
@@ -152,7 +152,7 @@ def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
                     channel = int(data[0]),
                     dim_channel_flag=int(data[1]),
                     binarization=BinarizationResults(
-                        spanning=data[2],
+                        connectivity=data[2],
                         max_island_size=data[3],
                         max_void_size=data[4],
                         max_island_percent_change=data[5],

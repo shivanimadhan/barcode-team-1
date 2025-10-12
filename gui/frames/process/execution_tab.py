@@ -13,13 +13,14 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     cc = config.channels
     cr = config.reader
     co = config.writer
+    cm = config.modules
 
     row_idx = 0
 
     # File/Directory Selection
     def browse_file():
         chosen = filedialog.askopenfilename(
-            filetypes=[("TIFF Image", "*.tif"), ("ND2 Document", "*.nd2")],
+            filetypes=[("TIFF Image", "*.tif *.tiff"), ("ND2 Document", "*.nd2"), ("MP4 File", "*.mp4"), ("AVI File", "*.avi")],
             title="Select a File",
         )
         if chosen:
@@ -71,16 +72,6 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
 
     browse_folder_btn = tk.Button(frame, text="Browse Folder…", command=browse_folder)
     browse_folder_btn.grid(row=row_idx, sticky="w", column=2, padx=5)
-    row_idx += 1
-
-    # Combine CSVs mode
-    tk.Radiobutton(
-        frame,
-        text="Combine CSV files / Generate Barcodes",
-        variable=ci.mode,
-        value="agg",
-        command=on_mode_change,
-    ).grid(row=row_idx, column=0, columnspan=2, sticky="w", padx=5, pady=5)
     row_idx += 1
 
     # Channel selection
@@ -139,7 +130,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         frame,
         row_idx,
         "Binarization",
-        cr.binarization,
+        cm.image_binarization,
         "Evaluate video(s) using binarization branch",
     )
     row_idx += 2
@@ -148,7 +139,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         frame,
         row_idx,
         "Optical Flow",
-        cr.optical_flow,
+        cm.optical_flow,
         "Evaluate video(s) using optical flow branch",
     )
     row_idx += 2
@@ -157,7 +148,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         frame,
         row_idx,
         "Intensity Distribution",
-        cr.intensity_distribution,
+        cm.intensity_distribution,
         "Evaluate video(s) using intensity distribution branch",
     )
     row_idx += 2
