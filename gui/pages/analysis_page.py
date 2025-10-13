@@ -69,13 +69,15 @@ def create_processing_worker(
                         "Error", "No CSV files selected for aggregation."
                     )
                     return
-                if not combined_location:
-                    messagebox.showerror("Error", "No aggregate location specified.")
-                    return
+                sort_choice = None if sort_param == "Default" else sort_param
+                
                 if generate_comparison_barcodes:
                     compare_multiple_csvs(csv_paths, sort_choice)
 
-                sort_choice = None if sort_param == "Default" else sort_param
+                if not combined_location:
+                    messagebox.showerror("Error", "No aggregate location specified.")
+                    return
+                
                 generate_aggregate_csv(
                     csv_paths, combined_location, generate_agg_barcode, sort_choice
                 )

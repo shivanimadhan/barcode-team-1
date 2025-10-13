@@ -24,7 +24,7 @@ def save_binarization_visualization(original_frame: np.ndarray, binarized_frame:
 
 def save_flow_field_visualization(flow, start_frame: int, end_frame: int, name: str, downsample: int):
     downU, downV, directions, speed = flow
-    img_shape_ratio = downU.shape[0] / downU.shape[1]
+    img_shape_ratio = downU.shape[1] / downU.shape[0]
     fig, ax = plt.subplots(figsize=(10 * img_shape_ratio,10))
     norm = colors.Normalize(vmin = 0, vmax = np.max(speed))
     cma = matplotlib.cm.plasma
