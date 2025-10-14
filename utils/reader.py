@@ -95,6 +95,8 @@ def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
             return np.nan
 
     expected_headers = ChannelResults.get_headers(just_metrics=False)
+    expected_physical_headers = ChannelResults.get_physical_headers(just_metrics=False)
+
 
     v1_header_length = 19 # Channel, Flags, 7 IB, 6 ID, 4 OF
     v2_header_length = 25 # Channel, Flags, 12 IB, 6 ID, 5 OF
@@ -107,8 +109,8 @@ def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
         headers = next(reader)
 
         assert (
-            headers == expected_headers
-        ), f"CSV headers {headers} do not match expected {expected_headers}"
+            (headers == expected_headers) or (headers == expected_physical_headers)
+        ), f"CSV headers {headers} do not match expected {expected_headers} or {expected_physical_headers}"
 
         for row in reader:
             filename = row[0]
@@ -147,39 +149,76 @@ def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
                     )
                 )
             elif len(data) == v2_header_length:
-                results.append(ChannelResults(
-                    filepath = filename,
-                    channel = int(data[0]),
-                    dim_channel_flag=int(data[1]),
-                    binarization=BinarizationResults(
-                        connectivity=data[2],
-                        max_island_size=data[3],
-                        max_void_size=data[4],
-                        max_island_percent_change=data[5],
-                        max_void_percent_change=data[6],
-                        island_size_initial=data[7],
-                        island_size_initial2=data[8],
-                        island_anisotropy = data[9],
-                        mean_island_size = data[10],
-                        total_island_size = data[11],
-                        mean_island_separation = data[12],
-                        island_correlation_length = data[13],
-                    ),
-                    intensity=IntensityResults(
-                        max_kurtosis=data[14],
-                        max_median_skew=data[15],
-                        max_mode_skew=data[16],
-                        kurtosis_diff=data[17],
-                        median_skew_diff=data[18],
-                        mode_skew_diff=data[19],
-                    ),
-                    flow=FlowResults(
-                        mean_speed=data[20],
-                        delta_speed=data[21],
-                        mean_theta=data[22],
-                        mean_sigma_theta=data[23],
-                        velocity_correlation_length=data[24]
+                if headers == expected_headers:
+                    results.append(ChannelResults(
+                        filepath = filename,
+                        channel = int(data[0]),
+                        dim_channel_flag=int(data[1]),
+                        binarization=BinarizationResults(
+                            connectivity=data[2],
+                            max_island_size=data[3],
+                            max_void_size=data[4],
+                            max_island_percent_change=data[5],
+                            max_void_percent_change=data[6],
+                            island_size_initial=data[7],
+                            island_size_initial2=data[8],
+                            island_anisotropy = data[9],
+                            mean_island_size = data[10],
+                            total_island_size = data[11],
+                            mean_island_separation = data[12],
+                            island_correlation_length = data[13],
+                        ),
+                        intensity=IntensityResults(
+                            max_kurtosis=data[14],
+                            max_median_skew=data[15],
+                            max_mode_skew=data[16],
+                            kurtosis_diff=data[17],
+                            median_skew_diff=data[18],
+                            mode_skew_diff=data[19],
+                        ),
+                        flow=FlowResults(
+                            mean_speed=data[20],
+                            delta_speed=data[21],
+                            mean_theta=data[22],
+                            mean_sigma_theta=data[23],
+                            velocity_correlation_length=data[24]
+                        )
+                    ))
+                elif headers == expected_physical_headers:
+                    results.append(
+                        ChannelResults(
+                            filepath=filename,
+                            channel=int(data[0]),
+                            dim_channel_flag=int(data[1]),
+                            binarization=BinarizationResults(
+                                connectivity=data[2],
+                                max_island_size_quantity=data[3],
+                                max_void_size_quantity=data[4],
+                                avg_island_percent_change=data[5],
+                                avg_void_percent_change=data[6],
+                                island_size_initial_quantity=data[7],
+                                island_size_initial2_quantity=data[8],
+                                island_anisotropy = data[9],
+                                mean_island_size_quantity = data[10],
+                                total_island_size_quantity = data[11],
+                                mean_island_separation = data[12],
+                                island_correlation_length = data[13],
+                            ),
+                            intensity=IntensityResults(
+                                max_kurtosis=data[14],
+                                max_median_skew=data[15],
+                                max_mode_skew=data[16],
+                                kurtosis_diff=data[17],
+                                median_skew_diff=data[18],
+                                mode_skew_diff=data[19],
+                            ),
+                            flow=FlowResults(
+                                mean_speed=data[20],
+                                delta_speed=data[21],
+                                mean_theta=data[22],
+                                mean_sigma_theta=data[23],
+                                velocity_correlation_length=data[24],
+                            ),
+                        )
                     )
-                ))
-
     return results

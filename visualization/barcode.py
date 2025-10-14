@@ -6,14 +6,6 @@ from typing import List
 from core.results import ChannelResults
 from core.metrics import Units, get_data_limits
 
-headers = [
-        'Filepath', 'Channel', 'Flags', 'Connectivity', 'Maximum Island Area', 'Maximum Void Area', 
-        'Island Area Change', 'Void Area Change', 'Initial Maximum Island Area', 
-        'Initial 2nd Maximum Island Area', 'Maximum Kurtosis', 'Maximum Median Skewness', 
-        'Maximum Mode Skewness', 'Kurtosis Change', 'Median Skewness Change', 
-        'Mode Skewness Change', 'Mean Speed', 'Speed Change',
-        'Mean Flow Direction', 'Flow Directional Spread']
-
 def check_limits(limit, thresh):
     if thresh < limit[0]:
         limit[0] = thresh
@@ -163,6 +155,7 @@ def generate_combined_barcode(
     results: List[ChannelResults],
     figpath: str,
     separate_channels: bool = True,
+    physical_units: bool = False,
 ) -> None:
     """
     Generate barcode visualization from structured ChannelResults.
@@ -183,7 +176,8 @@ def generate_combined_barcode(
         return f"{header}\n({unit.value})"
 
     # Convert structured results to array format (metrics only, no channel/flags)
-    data_arrays = [result.to_array(just_metrics=True) for result in results]
+    data_arrays = [result.to_physical_array(just_metrics=True) if physical_units else 
+                   result.to_array(just_metrics=True) for result in results]
 
     if not data_arrays:
         return
@@ -198,9 +192,14 @@ def generate_combined_barcode(
     unique_channels = unique_channels[~np.isnan(unique_channels)]
 
     # Get headers and units from structured results
-    headers = ChannelResults.get_headers(just_metrics=True)
-    metrics = ChannelResults.get_metrics(just_metrics=True)
-    units = results[0].get_units(just_metrics=True)
+    if physical_units:
+        headers = ChannelResults.get_physical_headers(just_metrics=True)
+        metrics = ChannelResults.get_physical_metrics(just_metrics=True)
+        units = results[0].get_physical_units(just_metrics=True)
+    else:
+        headers = ChannelResults.get_headers(just_metrics=True)
+        metrics = ChannelResults.get_metrics(just_metrics=True)
+        units = results[0].get_units(just_metrics=True)
     num_metrics = len(metrics)
 
     limits = get_data_limits(data, metrics, units)

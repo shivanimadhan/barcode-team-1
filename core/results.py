@@ -308,7 +308,7 @@ class ChannelResults(ResultsBase):
         )
     
     @classmethod
-    def get_extended_headers(cls, just_metrics: bool = False) -> List[str]:
+    def get_physical_headers(cls, just_metrics: bool = False) -> List[str]:
         """Get headers for CSV output."""
         return [metric.value for metric in cls.get_physical_metrics(just_metrics)]
 
@@ -373,7 +373,7 @@ class ChannelResults(ResultsBase):
             data = data | binarization_data | intensity_data | flow_data
         return data
     
-    def to_extended_array(self, **kwargs) -> np.ndarray:
+    def to_physical_array(self, **kwargs) -> np.ndarray:
         """Convert results to a NumPy array for easier manipulation."""
         return np.array(self.get_physical_data(**kwargs), dtype=float)
 

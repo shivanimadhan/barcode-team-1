@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, TypeAlias, TypeVar
 
 from core import ChannelResults, ResultsBase, Metrics, sort_channel_results_by_metric
 from utils.reader import read_csv_to_channel_results
-from visualization.barcode import generate_combined_barcode, generate_comparison_barcodes
+from visualization.barcode import generate_combined_barcode, generate_comparison_barcodes, generate_physical_barcode
 from core.config import ComparisonConfig
 
 warnings.filterwarnings("ignore")
@@ -20,6 +20,7 @@ ExtraColumns: TypeAlias = Dict[str, List[str]]
 def results_to_csv(
     results: List[R],
     output_filepath: str,
+    physical_units: bool,
     extra_columns: Optional[ExtraColumns] = None,
     **kwargs,
 ) -> None:
@@ -39,12 +40,22 @@ def results_to_csv(
             type(result) == expected_type
         ), f"All results must be the same type. Result {i} is {type(result).__name__}, expected {expected_type.__name__}"
 
+    # All results must have the same headers
+    quantified = bool(np.isnan(results[0].binarization.get_data()[2]) and (not 
+                      np.isnan(results[0].binarization.get_physical_data()[2])))
+
+    for i, result in enumerate(results[1:], 1):
+        assert (
+            (np.isnan(result.binarization.get_data()[2]) and (not 
+                      np.isnan(result.binarization.get_physical_data()[2]))) == quantified
+        ), f"All results must have the same headers. Result {i} headers do not match."
+
     # Ensure the directory exists
     assert os.path.exists(
         os.path.dirname(output_filepath)
     ), "Output directory does not exist."
 
-    headers = results[0].get_headers(**kwargs)
+    headers = results[0].get_physical_headers(**kwargs) if quantified else results[0].get_headers(**kwargs)
     if extra_columns:
         headers = list(extra_columns.keys()) + headers
 
@@ -57,8 +68,10 @@ def results_to_csv(
             if extra_columns:
                 for col_name in extra_columns.keys():
                     row.append(extra_columns[col_name][i])
-            row.extend(result.get_data(**kwargs))
+            new_row = result.get_physical_data(**kwargs) if quantified else result.get_data(**kwargs)
+            row.extend(new_row)
             writer.writerow(row)
+    return quantified
 
 
 def generate_aggregate_csv(
@@ -103,13 +116,15 @@ def generate_aggregate_csv(
 
     if not (len(csv_files) == 1 and csv_files[0] == output_csv):
         # Write aggregate CSV using the clean writer
-        results_to_csv(all_results, output_csv, just_metrics=False)
+        quantified = results_to_csv(all_results, output_csv, just_metrics=False)
 
     # Generate barcode if requested
     if gen_barcode:
         barcode_path = output_csv.replace(".csv", " Barcode")
         generate_combined_barcode(
-            all_results, barcode_path, separate_channels=separate_channels
+            all_results, barcode_path, 
+            separate_channels=separate_channels,
+            physical_units = quantified
         )
 
 def compare_multiple_csvs(
@@ -138,6 +153,11 @@ def compare_multiple_csvs(
             if sort_metric:
                 sort_channel_results_by_metric(results, sort_metric)
             all_results.append(results)
+            quantified = bool(np.isnan(all_results[0].binarization.get_data()[2]) and (not 
+                      np.isnan(all_results[0].binarization.get_physical_data()[2])))
+            assert ((np.isnan(results.binarization.get_data()[2]) and (not 
+                      np.isnan(results.binarization.get_physical_data()[2]))) == quantified
+        ), f"All results must have the same headers. Result headers do not match."
         except Exception as e:
             print(f"Warning: Could not read {csv_file}: {e}")
             continue

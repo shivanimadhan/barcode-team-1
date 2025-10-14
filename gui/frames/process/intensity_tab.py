@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from utils.preview import load_intensity_frames
+from utils.reader import load_intensity_frames
 from utils.gui import create_popup
 from utils.intensity_distribution import histogram, mean
 from gui.config import BarcodeConfigGUI, PreviewConfigGUI, InputConfigGUI

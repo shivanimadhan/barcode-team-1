@@ -8,7 +8,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from gui.config import PreviewConfigGUI, InputConfigGUI, BarcodeConfigGUI
-from utils.preview import load_binarization_frame, binarize
+from utils.reader import load_binarization_frame
+from utils.binarization import binarize
 from utils.gui import create_popup
 
 def create_binarization_frame(
