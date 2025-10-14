@@ -10,7 +10,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from gui.config import PreviewConfigGUI, InputConfigGUI, BarcodeConfigGUI
 from utils.reader import load_binarization_frame
 from utils.binarization import binarize
-from utils.gui import create_popup
+from utils.gui import create_popup, create_option_section
 
 def create_binarization_frame(
     parent,
@@ -27,6 +27,15 @@ def create_binarization_frame(
     ci = input_config
 
     row_b = 0
+
+    create_option_section(
+        frame, 
+        row_b, 
+        cb.enable_physical_units, 
+        "Output Unit Conversion", 
+        "Convert island and void sizes from percentage of FOV to real units of square microns -- uses micron-pixel ratio in Execution Settings or ND2 metadata."
+    )
+    row_b += 1
 
     # Binarization Threshold with scale
     threshold_label = tk.Label(frame, text="Binarization Threshold:")
