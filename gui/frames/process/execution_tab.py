@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from utils.gui import create_option_section, create_popup
 
 # from core import BarcodeConfig, InputConfig
 from gui.config import BarcodeConfigGUI, InputConfigGUI
@@ -16,6 +17,8 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     cm = config.modules
 
     row_idx = 0
+    header = ("TkDefaultFont", 15, "bold")
+
 
     # File/Directory Selection
     def browse_file():
@@ -42,6 +45,11 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         dir_entry.config(state=dir_state)
         browse_folder_btn.config(state=dir_state)
 
+    tk.Label(frame, text="Select Data", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
+    
     # Process File
     tk.Radiobutton(
         frame,
@@ -74,6 +82,11 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     browse_folder_btn.grid(row=row_idx, sticky="w", column=2, padx=5)
     row_idx += 1
 
+    tk.Label(frame, text="Select Channels", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
+
     # Channel selection
     tk.Label(frame, text="Choose Channel (-3 to 4):").grid(
         row=row_idx, column=0, sticky="w", padx=5, pady=5
@@ -81,13 +94,17 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
     channel_spin = tk.Spinbox(
         frame, from_=-4, to=4, textvariable=cc.selected_channel, width=5
     )
-    channel_spin.grid(row=row_idx, column=0, padx=(50, 5), pady=2)
+    channel_spin.grid(row=row_idx, column=1, padx=(50, 5), pady=2)
     row_idx += 1
 
-    parse_all_chk = tk.Checkbutton(
-        frame, text="Parse All Channels", variable=cc.parse_all_channels
+    create_option_section(
+       frame,
+       row_idx,
+       cc.parse_all_channels,
+       "Parse All Channels",
+       "Scan either a specific channel or every video channel. Selecting a channel less than 0 will result in reverse indexing of channels (i.e. selecting -1 " \
+       "will analyze the last channel of every file scanned, rather than the first).",
     )
-    parse_all_chk.grid(row=row_idx, column=0, sticky="w", padx=5, pady=2)
     row_idx += 1
 
     # Channel selection mutual exclusion
@@ -105,7 +122,13 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
 
     cc.selected_channel.trace_add("write", on_channel_selection_changed)
 
-    tk.Label(frame, text="Micron to Pixel Ratio (1 nm – 1 mm)").grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
+    tk.Label(frame, text="Specify Metadata", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
+
+    micron_pixel_label = tk.Label(frame, text="Micron to Pixel Ratio (1 nm – 1 mm)")
+    micron_pixel_label.grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
     um_pixel_spin = ttk.Spinbox(
         frame, from_=10**-3, to=10**3,
         increment=10**-3,
@@ -113,9 +136,11 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         width=9
     )
     um_pixel_spin.grid(row=row_idx, column=1, padx=5, pady=5)
+    create_popup(frame, "Set ratio of physical units (in microns) to pixels in image. Automatically read for ND2 files.", row_idx, micron_pixel_label)
     row_idx += 1
 
-    tk.Label(frame, text="Exposure Time [seconds] (1 ms - 1 hour)").grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
+    exp_time_label = tk.Label(frame, text="Exposure Time [seconds] (1 ms - 1 hour)")
+    exp_time_label.grid(row=row_idx, column=0, sticky="w", padx=5, pady=5)
     frame_interval_spin = ttk.Spinbox(
         frame, from_=10**-3, to=3.6 * 10**3,
         increment=10**-3,
@@ -123,88 +148,115 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         width=7
     )
     frame_interval_spin.grid(row=row_idx, column=1, padx=5, pady=5)
+    create_popup(frame, "Control interval (in seconds) between frames. Automatically read for ND2 files.", row_idx, exp_time_label)
+    row_idx += 1
+
+    tk.Label(frame, text="Select Branches", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
     row_idx += 1
     
     # Analysis modules
-    _create_analysis_section(
+    create_option_section(
         frame,
         row_idx,
-        "Binarization",
         cm.image_binarization,
-        "Evaluate video(s) using binarization branch",
+        "Image Binarization",
+        "Evaluate file(s) using Binarization branch (will generate a .CSV reduced data structure (RDS) for further analysis).",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    create_option_section(
         frame,
         row_idx,
-        "Optical Flow",
         cm.optical_flow,
-        "Evaluate video(s) using optical flow branch",
+        "Optical Flow",
+        "Evaluate file(s) using Optical Flow branch (will generate a .CSV reduced data structure (RDS) for further analysis).",
     )
     row_idx += 2
 
-    _create_analysis_section(
+    create_option_section(
         frame,
         row_idx,
-        "Intensity Distribution",
         cm.intensity_distribution,
-        "Evaluate video(s) using intensity distribution branch",
+        "Intensity Distribution",
+        "Evaluate file(s) using Intensity Distribution branch (will generate a .CSV reduced data structure (RDS) for further analysis).",
     )
     row_idx += 2
 
+    tk.Label(frame, text="Handling Dim Data", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
 
     # Options
-    _create_option_section(
+    create_option_section(
         frame,
         row_idx,
-        "Include dim files",
         cr.accept_dim_images,
-        "Click to scan files that may be too dim to accurately profile",
+        "Scan dim files",
+        "Include files that may be too dim to accurately profile (e.g. low light conditions, poor contrast).",
     )
     row_idx += 2
 
-    _create_option_section(
+    create_option_section(
         frame,
         row_idx,
-        "Include dim channels",
         cr.accept_dim_channels,
-        "Click to scan channels that may be too dim to accurately profile",
+        "Scan dim channels",
+        "Include channels that may be too dim to accurately profile (e.g. one channel is dim while others are better defined).",
     )
     row_idx += 2
 
-    _create_option_section(frame, row_idx, "Verbose", cr.verbose, "Show more details")
-    row_idx += 2
+    tk.Label(frame, text="Output Settings", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
 
-    _create_option_section(
+    create_option_section(
         frame,
         row_idx,
-        "Save Graphs",
+        cr.verbose,
+        "Verbose Output",
+        "Provide additional information in the run-time Processing Log while the data is being processed (e.g. time step updates, total processing time, image dimness).",
+    )
+    row_idx += 2
+
+    create_option_section(
+        frame,
+        row_idx,
         co.save_visualizations,
-        "Click to save graphs representing sample changes",
+        "Save Graphs",
+        "Save .PNG graphs representing chosen data structures (binarized images, optical flow fields, intensity distributions).",
     )
     row_idx += 2
 
-    _create_option_section(
+    create_option_section(
         frame,
         row_idx,
-        "Save Reduced Data Structures",
         co.save_rds,
-        "Click to save reduced data structures (flow fields, binarized images, intensity distributions) for further analysis",
+        "Save Reduced Data Structures",
+        "Save .CSV reduced data structures for chosen branches (binarized images, optical flow fields, intensity distributions) for further analysis.",
     )
     row_idx += 2
 
-    _create_option_section(
+    create_option_section(
         frame,
         row_idx,
-        "Dataset Barcode",
         co.generate_barcode,
-        "Generates an aggregate barcode for the dataset",
+        "Generate Dataset Barcode",
+        "Save an .PNG BARCODE matrix for the dataset, plotting the 23 BARCODE metrics for each channel in the dataset on a color-coded scale.",
     )
     row_idx += 2
+
+    tk.Label(frame, text="Configuration Settings", font=header).grid(
+        row=row_idx, column=0, columnspan=3, sticky="w", padx=(5, 5), pady=(10, 5)
+    )
+    row_idx += 1
 
     # Configuration file
-    tk.Label(frame, text="Configuration YAML File:").grid(
+    config_label = tk.Label(frame, text="Configuration YAML File:")
+    config_label.grid(
         row=row_idx, column=0, sticky="w", padx=5, pady=2
     )
     config_entry = tk.Entry(frame, textvariable=ci.configuration_file, width=35)
@@ -222,6 +274,8 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
         row=row_idx, column=2, sticky="w", padx=5
     )
 
+    create_popup(frame, "If desired, choose branch settings from a prior .YAML file.", row_idx, config_label)
+
     return frame
 
 
@@ -238,14 +292,14 @@ def _create_analysis_section(parent, row, title, var, description):
     )
 
 
-def _create_option_section(parent, row, title, var, description):
-    """Helper to create option sections"""
-    tk.Label(parent, text=title, font=("TkDefaultFont", 10, "bold")).grid(
-        row=row, column=0, columnspan=3, sticky="w", padx=5, pady=(10, 0)
-    )
+# def _create_option_section(parent, row, title, var, description):
+#     """Helper to create option sections"""
+#     tk.Label(parent, text=title, font=("TkDefaultFont", 10, "bold")).grid(
+#         row=row, column=0, columnspan=3, sticky="w", padx=5, pady=(10, 0)
+#     )
 
-    tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
+#     tk.Checkbutton(parent, variable=var).grid(row=row + 1, column=0, sticky="w", padx=5)
 
-    tk.Label(parent, text=description).grid(
-        row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(0, 0)
-    )
+#     tk.Label(parent, text=description).grid(
+#         row=row + 1, column=0, sticky="w", padx=(25, 5), pady=(0, 0)
+#     )

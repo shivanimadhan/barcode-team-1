@@ -40,7 +40,7 @@ def create_comparison_frame(parent, config: BarcodeConfigGUI,
             cc.csv_location.set("")
             csv_label.config("No file selected")
 
-    tk.Button(frame, text="Browse CSV Files...", command=browse_csv_file).grid(
+    tk.Button(frame, text="Select CSV File", command=browse_csv_file).grid(
         row=row_bc, column=2, padx=5, pady=5)
     row_bc += 1
 

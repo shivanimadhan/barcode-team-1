@@ -9,6 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from gui.config import PreviewConfigGUI, InputConfigGUI, BarcodeConfigGUI
 from utils.preview import load_binarization_frame, binarize
+from utils.gui import create_popup
 
 def create_binarization_frame(
     parent,
@@ -27,9 +28,12 @@ def create_binarization_frame(
     row_b = 0
 
     # Binarization Threshold with scale
-    tk.Label(frame, text="Binarization Threshold:").grid(
+    threshold_label = tk.Label(frame, text="Binarization Threshold:")
+    threshold_label.grid(
         row=row_b, column=0, sticky="w", padx=5, pady=5
     )
+    create_popup(frame, "Changes cutoff threshold for binarization. Decreasing threshold can increase noise, while increasing threshold can lead to lost" \
+    "features. Use viewer to determine optimal value for sample.", row_b, threshold_label)
 
     scale_frame = tk.Frame(frame)
     scale_frame.columnconfigure(0, weight=0)
@@ -244,18 +248,23 @@ def create_binarization_frame(
 
     # Other binarization settings
 
-    tk.Label(frame, text="Frame Step:").grid(
+    frame_step_label = tk.Label(frame, text="Frame Step:")
+    frame_step_label.grid(
         row=row_b, column=0, sticky="w", padx=5, pady=5
     )
+    create_popup(frame, "Changes interval (in frames) between binarized frames. Affects speed of program, with larger intervals decreasing program" \
+    " runtime.", row_b, frame_step_label)
     res_f_step_spin = ttk.Spinbox(
         frame, from_=1, to=100, increment=1, textvariable=cb.frame_step, width=7
     )
     res_f_step_spin.grid(row=row_b, column=1, padx=5, pady=5)
     row_b += 1
 
-    tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25):").grid(
+    frame_fraction_label = tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25):")
+    frame_fraction_label.grid(
         row=row_b, column=0, sticky="w", padx=5, pady=5
     )
+    create_popup(frame, "Used for determining frames for averaging in calculation of initial maximum island area and maximum island/void area change; not used for calculation of maximum island/void area; decreasing this results in fewer frames being used for these averages, at the cost of more sensitivity to noise", row_b, frame_fraction_label)
     pf_start_spin = ttk.Spinbox(
         frame,
         from_=0.01,

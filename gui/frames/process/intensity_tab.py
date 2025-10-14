@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from utils.preview import load_intensity_frames
+from utils.gui import create_popup
 from utils.intensity_distribution import histogram, mean
 from gui.config import BarcodeConfigGUI, PreviewConfigGUI, InputConfigGUI
 
@@ -16,7 +17,8 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
     frame = ttk.Frame(parent)
     row_c = 0 
 
-    tk.Label(frame, text="Distribution Number of Bins").grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
+    dist_bins_label = tk.Label(frame, text="Distribution Number of Bins")
+    dist_bins_label.grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
     pf_eval_spin = ttk.Spinbox(
         frame, from_=100, to=500,
         increment=1,
@@ -24,9 +26,11 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         width=7
     )
     pf_eval_spin.grid(row=row_c, column=1, padx=5, pady=5)
+    create_popup(frame, "Controls the number of bins in histogram; increasing/decreasing the number of bins may result in binning artifacts that affect accuracy of intensity distribution", row_c, dist_bins_label)
     row_c += 1
 
-    tk.Label(frame, text="Distribution Noise Threshold").grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
+    dist_thresh_label = tk.Label(frame, text="Distribution Noise Threshold")
+    dist_thresh_label.grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
     pf_eval_spin = ttk.Spinbox(
         frame, from_=1e-5, to=1e-2,
         increment=1e-5,
@@ -35,6 +39,7 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         width=7
     )
     pf_eval_spin.grid(row=row_c, column=1, padx=5, pady=5)
+    create_popup(frame, "Controls the minimum normalized probability in the intensity distribution; increasing/decreasing this will affect the sensitivity of the metrics to noise", row_c, dist_thresh_label)
     row_c += 1
 
         # Sample file selection
@@ -188,7 +193,8 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
 
     row_c += 1
 
-    tk.Label(frame, text="Frame Step").grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
+    frame_step_label = tk.Label(frame, text="Frame Step")
+    frame_step_label.grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
     f_step_spin = ttk.Spinbox(
         frame,
         from_=1, to=100,
@@ -197,9 +203,12 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         width=7
     )
     f_step_spin.grid(row=row_c, column=1, padx=5, pady=5)
+    create_popup(frame, "Changes interval (in frames) between frames used for intensity distribution analysis. Affects speed of program, with larger intervals decreasing program" \
+    " runtime.", row_c, frame_step_label)
     row_c += 1
 
-    tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25)").grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
+    frame_fraction_label = tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25)")
+    frame_fraction_label.grid(row=row_c, column=0, sticky="w", padx=5, pady=5)
     pf_eval_spin = ttk.Spinbox(
         frame, from_=0.01, to=0.25,
         increment=0.01,
@@ -208,6 +217,7 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         width=7
     )
     pf_eval_spin.grid(row=row_c, column=1, padx=5, pady=5)
+    create_popup(frame, "Used for determining frames for averaging in calculation of initial maximum island area and maximum island/void area change; not used for calculation of maximum island/void area; decreasing this results in fewer frames being used for these averages, at the cost of more sensitivity to noise", row_c, frame_fraction_label)
     row_c += 1
 
     return frame

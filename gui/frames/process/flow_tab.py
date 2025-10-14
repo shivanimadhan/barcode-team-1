@@ -15,6 +15,7 @@ from tkinter import ttk
 from gui.config import BarcodeConfigGUI, InputConfigGUI, PreviewConfigGUI, ReaderConfigGUI
 from core.config import BarcodeConfig
 from utils.reader import load_flow_frames
+from utils.gui import create_popup
 
 # from .execution_tab import create_popup
 
@@ -34,7 +35,8 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
     cr = config.reader
 
     row_f = 0
-    tk.Label(frame, text="Frame Step").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
+    frame_step_label = tk.Label(frame, text="Frame Step")
+    frame_step_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
     of_f_step_spin = ttk.Spinbox(
         frame, from_=1, to=1000,
         increment=1,
@@ -42,9 +44,12 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
         width=7
     )
     of_f_step_spin.grid(row=row_f, column=1, padx=5, pady=5)
+    create_popup(frame, "Change interval (in frames) between frames used to calculate optical flow field. Will affect speed of program, with larger" \
+    "intervals decreasing program runtime.", row_f, frame_step_label)
     row_f += 1
 
-    tk.Label(frame, text="Optical Flow Window Size").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
+    win_size_label = tk.Label(frame, text="Optical Flow Window Size")
+    win_size_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
     win_size_spin = ttk.Spinbox(
         frame, from_=1, to=1000,
         increment=1,
@@ -52,9 +57,13 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
         width=7
     )
     win_size_spin.grid(row=row_f, column=1, padx=5, pady=5)
+    create_popup(frame, "Define size of region around each pixel used to calculate optical flow field. Larger window sizes result in less noise, but" \
+    "blurrier motion fields. Smaller window sizes detect smaller movement within the material, but are more susceptible to random noise.", row_f, 
+    win_size_label)
     row_f += 1
 
-    tk.Label(frame, text="Downsample/Binning Factor").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
+    downsample_label = tk.Label(frame, text="Downsample/Binning Factor")
+    downsample_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
     downsample_spin = ttk.Spinbox(
         frame, from_=1, to=1000,
         increment=1,
@@ -62,6 +71,9 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
         width=7
     )
     downsample_spin.grid(row=row_f, column=1, padx=5, pady=5)
+    create_popup(frame, "Control interval between pixels that flow field is sampled at. Increasing downsampling reduces noise (along with precision) and" \
+    "is recommended for large-scale movement of areas of material. Decreasing downsampling is recommended for movement of many smaller areas of material.",
+    row_f, downsample_label)
     row_f += 1
 
     tk.Label(frame, text="Choose image from folder for preview:").grid(
@@ -213,13 +225,6 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
             sample_file_combobox.set("")
             sample_file_combobox["values"] = []
             sample_file_combobox.config(state="disabled")
-
-
-    #Live preview setup
-    #preview_title = tk.Label(frame, text="Dynamic preview of first frames optical flow:")
-    #preview_title.grid(
-    #   row=row_f, column=0, columnspan=2, padx=5, pady=(10, 2), sticky="w"
-    #)
     row_f += 1
 
     # Wire up events
@@ -234,7 +239,8 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
     cr.exposure_time.trace_add("write", update_preview)
     ci.dir_path.trace_add("write", update_sample_file_options)
 
-    tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25)").grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
+    frame_fraction_label = tk.Label(frame, text="Fraction of Frames Evaluated (0.01–0.25)")
+    frame_fraction_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
     of_pf_eval_spin = ttk.Spinbox(
         frame, from_=0.01, to=0.25,
         increment=0.01,
@@ -243,5 +249,6 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
         width=7
     )
     of_pf_eval_spin.grid(row=row_f, column=1, padx=5, pady=5)
+    create_popup(frame, "Used for determining frames for averaging in calculation of speed change; not used for calculation of other optical flow metrics; decreasing this results in fewer frames being used for these averages, at the cost of more sensitivity to noise", row_f, frame_fraction_label)
 
     return frame
