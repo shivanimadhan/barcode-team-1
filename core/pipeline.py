@@ -49,21 +49,23 @@ def save_analysis_results(
     barcode_path = os.path.join(base_path, base_name + " Summary Barcode")
     settings_path = os.path.join(base_path, base_name + " Settings.yaml")
 
+    physical_units = config.image_binarization_parameters.enable_physical_units
+
     # Save CSV
     if all_results:
         if is_single_file:
             # Single file: fail fast if can't write
-            results_to_csv(all_results, csv_path, just_metrics=False)
+            results_to_csv(all_results, csv_path, just_metrics=False, physical_units=physical_units)
         else:
             # Directory: try alternate names if file exists
             try:
-                results_to_csv(all_results, csv_path, just_metrics=False)
+                results_to_csv(all_results, csv_path, just_metrics=False, physical_units=physical_units)
             except:
                 counter = 1
                 while os.path.exists(csv_path):
                     counter += 1
                     csv_path = os.path.join(base_path, f"{base_name} Summary ({counter}).csv")
-                results_to_csv(all_results, csv_path, just_metrics=False)
+                results_to_csv(all_results, csv_path, just_metrics=False, physical_units=physical_units)
     else:
         print("Warning: No results to write - all files may have failed processing")
 

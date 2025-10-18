@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, TypeAlias, TypeVar
 
 from core import ChannelResults, ResultsBase, Metrics, sort_channel_results_by_metric
 from utils.reader import read_csv_to_channel_results
-from visualization.barcode import generate_combined_barcode, generate_comparison_barcodes, generate_physical_barcode
+from visualization.barcode import generate_combined_barcode, generate_comparison_barcodes
 from core.config import ComparisonConfig
 
 warnings.filterwarnings("ignore")
