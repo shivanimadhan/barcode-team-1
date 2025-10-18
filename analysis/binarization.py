@@ -4,7 +4,7 @@ from typing import Tuple, List, Optional
 from itertools import pairwise
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import cv2
 from numpy.fft import fft2,ifft2,fftshift
 from scipy import ndimage
 from skimage import io, color, filters, measure, morphology
@@ -135,8 +135,7 @@ def analyze_binarization(video: np.ndarray, name: str, bin_config: BinarizationC
     save_spots = np.array([0, mid_point, frame_indices[-1]])
 
     for frame_idx in frame_indices:
-        new_image = binarize(video[frame_idx], threshold_offset)
-        new_frame = groupAvg(new_image, binning_factor, bin_mask = True)
+        new_frame = binarize(video[frame_idx], threshold_offset, binning_factor)
         if frame_idx in save_spots and out_config.save_visualizations:
             save_binarization_visualization(video[frame_idx], new_frame, frame_idx, name)
 

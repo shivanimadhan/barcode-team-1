@@ -91,6 +91,20 @@ def create_binarization_frame(
         lbl.grid(row=1, column=i + 1, sticky="n")
     row_b += 1
 
+    binning_label = tk.Label(frame, text="Binning Ratio:")
+    binning_label.grid(
+        row=row_b, column = 0, sticky="w", padx=5, pady=5
+    )
+    binning_menu = ttk.Combobox(
+        frame,
+        textvariable=cb.bin_factor,
+        values=[1, 2, 4, 8],
+        width=5,
+        state="readonly"  # force selection from list
+    )
+    binning_menu.grid(row = row_b, column=1, padx=5, pady=5)
+    row_b += 1
+
     # Sample file selection
     tk.Label(frame, text="Choose image from folder for preview:").grid(
         row=row_b, column=0, sticky="w", padx=5, pady=5
@@ -191,7 +205,8 @@ def create_binarization_frame(
 
         # Show down-sampled binarized
         offset = cb.threshold_offset.get()
-        bin_arr = binarize(img, offset)
+        bin_factor = cb.bin_factor.get()
+        bin_arr = binarize(img, offset, bin_factor)
         small_bin = bin_arr[::scale, ::scale]
         ax_bin.clear()
         ax_bin.imshow(small_bin, cmap="gray", interpolation="nearest")
@@ -252,6 +267,7 @@ def create_binarization_frame(
     config.channels.parse_all_channels.trace_add("write", load_preview_frame)
     cb.threshold_offset.trace_add("write", update_preview)
     ci.dir_path.trace_add("write", update_sample_file_options)
+    cb.bin_factor.trace_add("write", update_preview)
 
     # Initialize preview
     load_preview_frame()
