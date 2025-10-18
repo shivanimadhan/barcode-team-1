@@ -50,11 +50,11 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
 
     win_size_label = tk.Label(frame, text="Optical Flow Window Size")
     win_size_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
-    win_size_spin = ttk.Spinbox(
-        frame, from_=1, to=1000,
-        increment=1,
+    win_size_spin = ttk.Combobox(
+        frame,
         textvariable=co.win_size,
-        width=7
+        values=[4, 8, 16, 32],
+        width=7,
     )
     win_size_spin.grid(row=row_f, column=1, padx=5, pady=5)
     create_popup(frame, "Define size of region around each pixel used to calculate optical flow field. Larger window sizes result in less noise, but" \
@@ -64,11 +64,11 @@ def create_flow_frame(parent, config: BarcodeConfigGUI, preview_config: PreviewC
 
     downsample_label = tk.Label(frame, text="Downsample/Binning Factor")
     downsample_label.grid(row=row_f, column=0, sticky="w", padx=5, pady=5)
-    downsample_spin = ttk.Spinbox(
-        frame, from_=1, to=1000,
-        increment=1,
+    downsample_spin = ttk.Combobox(
+        frame,
         textvariable=co.downsample,
-        width=7
+        values=[2, 4, 8, 16],
+        width=7,
     )
     downsample_spin.grid(row=row_f, column=1, padx=5, pady=5)
     create_popup(frame, "Control interval between pixels that flow field is sampled at. Increasing downsampling reduces noise (along with precision) and" \

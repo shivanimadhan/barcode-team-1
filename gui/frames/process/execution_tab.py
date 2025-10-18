@@ -18,6 +18,7 @@ def create_execution_frame(parent, config: BarcodeConfigGUI, input_config: Input
 
     row_idx = 0
     header = ("TkDefaultFont", 15, "bold")
+    frame.option_add("*font", "TkDefaultFont 13")
 
 
     # File/Directory Selection

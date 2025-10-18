@@ -133,6 +133,7 @@ def create_intensity_frame(parent, config: BarcodeConfigGUI, preview_config: Pre
         ax.set_ylabel("Probability")
         ax.set_yscale('log')
         ax.set_xlim(0,max_intensity)
+        ax.set_ylim(0.9 * noise_threshold, 1)
         ax.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), borderaxespad=0.0, frameon=False)
         canvas.draw()
 
