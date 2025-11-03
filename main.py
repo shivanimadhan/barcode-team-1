@@ -29,18 +29,17 @@ def main():
 
     # set geometry with position
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-    # scrollable_frame, canvas = setup_scrollable_container(root)
-
     def switch_page(page_name):
         for widget in root.winfo_children():
             widget.destroy()
 
+        scrollable_frame, canvas = setup_scrollable_container(root)
         if page_name == "home":
-            create_home_page(root, switch_page)
+            create_home_page(canvas, switch_page)
         elif page_name == "process":
-            create_process_page(root, switch_page)
+            create_process_page(scrollable_frame, switch_page)
         elif page_name == "combine":
-            create_combine_page(root, switch_page)
+            create_combine_page(scrollable_frame, switch_page)
 
     # load home page by default
     create_home_page(root, switch_page)
