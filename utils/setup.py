@@ -23,7 +23,7 @@ def find_files(path: str) -> List[str]:
     if os.path.isfile(path):
         return [path]
     files = []
-    file_formats = (".nd2", ".tiff", ".tif")
+    file_formats = (".nd2", ".tiff", ".tif", ".mp4", ".avi")
     for dirpath, dirnames, filenames in os.walk(path):
         dirnames[:] = [d for d in dirnames]
         for filename in filenames:
