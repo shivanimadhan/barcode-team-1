@@ -68,17 +68,17 @@ def read_file(filepath, count_list, config: BarcodeConfig = None, accept_dim: bo
         return file
 
 def load_binarization_frame(file_path, channel = 0):
-    frame = read_file(file_path, count_list = (1, 1), frames = [0])
+    frame = read_file(file_path, count_list = (1, 1), frames = [0], accept_dim=True)
     return frame[0,:,:,channel]
 
 def load_intensity_frames(file_path, channel = 0):
-    file = read_file(file_path, count_list = (1, 1), frames = [0, -1])
+    file = read_file(file_path, count_list = (1, 1), frames = [0, -1], accept_dim=True)
     frame1 = file[0,:,:,channel]
     frame2 = file[-1,:,:,channel]
     return frame1, frame2, len(file)
 
 def load_flow_frames(file_path, channel = 0):
-    frames = read_file(file_path, count_list = (1, 1))
+    frames = read_file(file_path, count_list = (1, 1), accept_dim=True)
     return frames[:,:,:,channel]
 
 def read_csv_to_channel_results(filepath: str) -> list[ChannelResults]:
