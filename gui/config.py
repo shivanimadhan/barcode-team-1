@@ -277,6 +277,7 @@ class AggregationConfigGUI:
     generate_comparison_barcodes: tk.BooleanVar = field(init=False)
     sort_parameter: tk.StringVar = field(init=False)
     csv_paths_list: List[str] = field(default_factory=list)
+    metrics_list: List[bool] = field(default_factory=list)
 
     def __post_init__(self):
         self.output_location = tk.StringVar(value=self._core_config.output_location)
@@ -284,6 +285,7 @@ class AggregationConfigGUI:
         self.generate_comparison_barcodes = tk.BooleanVar(value=self._core_config.generate_comparison_barcodes)
         self.sort_parameter = tk.StringVar(value=self._core_config.sort_parameter)
         self.csv_paths_list = list(self._core_config.csv_paths_list)
+        self.metrics_list = list(self._core_config.metrics_list)
 
     @property
     def config(self) -> AggregationConfig:
@@ -294,6 +296,7 @@ class AggregationConfigGUI:
             generate_comparison_barcodes=self.generate_comparison_barcodes.get(),
             sort_parameter=self.sort_parameter.get(),
             csv_paths_list=self.csv_paths_list,
+            metrics_list=self.metrics_list,
         )
 
     def update_gui(self, new_config: AggregationConfig):
@@ -304,6 +307,7 @@ class AggregationConfigGUI:
         self.generate_comparison_barcodes.set(new_config.generate_comparison_barcodes)
         self.sort_parameter.set(new_config.sort_parameter)
         self.csv_paths_list.set(new_config.csv_paths_list)
+        self.metrics_list.set(new_config.metrics_list)
 
 @dataclass
 class ComparisonConfigGUI:

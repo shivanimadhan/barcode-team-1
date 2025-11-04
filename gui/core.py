@@ -14,7 +14,8 @@ def get_tk_var_type(python_type):
         float: "tk.DoubleVar",
         bool: "tk.BooleanVar",
         str: "tk.StringVar",
-        List[str]: "List[str]" 
+        List[str]: "List[str]",
+        List[bool]:  "List[bool]"
     }
     return mapping.get(python_type, "tk.StringVar")
 

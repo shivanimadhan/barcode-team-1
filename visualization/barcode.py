@@ -1,4 +1,5 @@
 import csv
+from itertools import compress
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -156,6 +157,7 @@ def generate_combined_barcode(
     figpath: str,
     separate_channels: bool = True,
     physical_units: bool = False,
+    metrics_to_visualize: List[bool] = None,
 ) -> None:
     """
     Generate barcode visualization from structured ChannelResults.
@@ -176,8 +178,8 @@ def generate_combined_barcode(
         return f"{header}\n({unit.value})"
 
     # Convert structured results to array format (metrics only, no channel/flags)
-    data_arrays = [result.to_physical_array(just_metrics=True) if physical_units else 
-                   result.to_array(just_metrics=True) for result in results]
+    data_arrays = [list(compress(result.to_physical_array(just_metrics=True), metrics_to_visualize)) if physical_units else 
+                   list(compress(result.to_array(just_metrics=True), metrics_to_visualize)) for result in results]
 
     if not data_arrays:
         return
@@ -193,13 +195,13 @@ def generate_combined_barcode(
 
     # Get headers and units from structured results
     if physical_units:
-        headers = ChannelResults.get_physical_headers(just_metrics=True)
-        metrics = ChannelResults.get_physical_metrics(just_metrics=True)
-        units = results[0].get_physical_units(just_metrics=True)
+        headers = list(compress(ChannelResults.get_physical_headers(just_metrics=True), metrics_to_visualize))
+        metrics = list(compress(ChannelResults.get_physical_metrics(just_metrics=True), metrics_to_visualize))
+        units = list(compress(results[0].get_physical_units(just_metrics=True), metrics_to_visualize))
     else:
-        headers = ChannelResults.get_headers(just_metrics=True)
-        metrics = ChannelResults.get_metrics(just_metrics=True)
-        units = results[0].get_units(just_metrics=True)
+        headers = list(compress(ChannelResults.get_headers(just_metrics=True), metrics_to_visualize))
+        metrics = list(compress(ChannelResults.get_metrics(just_metrics=True), metrics_to_visualize))
+        units = list(compress(results[0].get_units(just_metrics=True), metrics_to_visualize))
     num_metrics = len(metrics)
 
     limits = get_data_limits(data, metrics, units)
@@ -232,7 +234,7 @@ def generate_combined_barcode(
 
         # Set up figure dimensions
         height = 9 * int(len(filtered_data) / 40) if len(filtered_data) > 40 else 9
-        fig = plt.figure(figsize=(15, height), dpi=300)
+        fig = plt.figure(figsize=(num_metrics, height), dpi=300)
 
         if height == 9:
             height_ratio = [5, 2]

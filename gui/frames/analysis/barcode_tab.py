@@ -88,5 +88,25 @@ def create_barcode_frame(
         frame, ca.sort_parameter, headers[0], *headers  # default value  # all choices
     )
     sort_menu.grid(row=row_ba, column=1, sticky="w", padx=5, pady=5)
+    row_ba += 1
+
+    activated_metrics_choice = {}
+    activated_metrics_menu = tk.Menubutton(frame, text = "Select Metrics to Visualize in BARCODE")
+    activated_metrics_menu.menu = tk.Menu(activated_metrics_menu)
+    activated_metrics_menu["menu"]= activated_metrics_menu.menu 
+    def updateActivatedMetrics():
+        selected_metrics = []
+        for metric, on_off in activated_metrics_choice.items():
+            selected_metrics.append(bool(on_off.get()))        
+        ca.metrics_list.clear()
+        ca.metrics_list.extend(selected_metrics)
+    for metric in metrics_list_str:
+        activated_metrics_choice[metric] = tk.IntVar()
+        activated_metrics_choice[metric].set(1)
+        activated_metrics_menu.menu.add_checkbutton(label = metric, 
+                                               variable = activated_metrics_choice[metric],
+                                               onvalue=1, offvalue = 0,
+                                               command = updateActivatedMetrics)
+    activated_metrics_menu.grid(row=row_ba, column=0, sticky="w", padx=5, pady=5)
 
     return frame

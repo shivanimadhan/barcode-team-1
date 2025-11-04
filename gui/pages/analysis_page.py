@@ -63,6 +63,7 @@ def create_processing_worker(
                 generate_comparison_barcodes = aggregation_config.generate_comparison_barcodes
                 sort_param = aggregation_config.sort_parameter
                 csv_paths = aggregation_config.csv_paths_list
+                metrics_to_visualize = aggregation_config.metrics_list
 
                 if not csv_paths:
                     messagebox.showerror(
@@ -79,7 +80,7 @@ def create_processing_worker(
                     return
                 
                 generate_aggregate_csv(
-                    csv_paths, combined_location, generate_agg_barcode, sort_choice
+                    csv_paths, combined_location, generate_agg_barcode, sort_choice, metrics_to_visualize=metrics_to_visualize
                 )
 
             elif mode == "comp":

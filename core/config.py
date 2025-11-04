@@ -75,6 +75,7 @@ class AggregationConfig(BaseConfig):
     generate_comparison_barcodes: bool = False
     sort_parameter: str = "Default"  # One of the metric headers
     csv_paths_list: List[str] = field(default_factory=list)
+    metrics_list: List[bool] = field(default_factory=list)
 
 @dataclass
 class ComparisonConfig(BaseConfig):

@@ -20,7 +20,6 @@ ExtraColumns: TypeAlias = Dict[str, List[str]]
 def results_to_csv(
     results: List[R],
     output_filepath: str,
-    physical_units: bool,
     extra_columns: Optional[ExtraColumns] = None,
     **kwargs,
 ) -> None:
@@ -79,7 +78,8 @@ def generate_aggregate_csv(
     output_csv: str,
     gen_barcode: bool = False,
     sort_metric: Optional[str] = None,
-    separate_channels: bool = False,
+    separate_channels: bool = True,
+    metrics_to_visualize: List[bool] = None,
 ) -> None:
     """
     Clean version of aggregate CSV generation using structured data.
@@ -117,6 +117,9 @@ def generate_aggregate_csv(
     if not (len(csv_files) == 1 and csv_files[0] == output_csv):
         # Write aggregate CSV using the clean writer
         quantified = results_to_csv(all_results, output_csv, just_metrics=False)
+    else:
+        quantified = bool(np.isnan(all_results[0].binarization.get_data()[2]) and (not 
+                      np.isnan(all_results[0].binarization.get_physical_data()[2])))
 
     # Generate barcode if requested
     if gen_barcode:
@@ -124,7 +127,8 @@ def generate_aggregate_csv(
         generate_combined_barcode(
             all_results, barcode_path, 
             separate_channels=separate_channels,
-            physical_units = quantified
+            physical_units = quantified,
+            metrics_to_visualize= metrics_to_visualize,
         )
 
 def compare_multiple_csvs(
