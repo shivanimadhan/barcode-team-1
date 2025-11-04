@@ -56,19 +56,27 @@ def find_island_properties(frame: np.ndarray):
         else:
             return np.nan
     labeled, a = label(frame, connectivity= 2, return_num =True)
-    props = ["area", "axis_major_length", "axis_minor_length", "centroid"]
+    props = ["area", "centroid"]
     if a == 0 or not regionprops(labeled):
-        return
+        return [np.nan] * 6
+    contours, _ = cv2.findContours(frame.astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    contours = [contour for contour in contours if cv2.contourArea(contour) > 5]
+    axes_lengths = [cv2.fitEllipse(contour)[1] for contour in contours
+                    if min(cv2.fitEllipse(contour)[1]) >= 1]
+    major_axes = [max(length) for length in axes_lengths]
+    minor_axes = [min(length) for length in axes_lengths]
+
     regions = regionprops(labeled)
     region_areas = sorted([r.area for r in regions], reverse = True)
     total_island_area = sum(region_areas)
-    mean_island_area = np.mean(region_areas)
-    largest_island_area, second_largest_island_area = region_areas[:2]
+    mean_island_area = np.nanmean(region_areas)
+    if len(region_areas) >= 2:
+        largest_island_area, second_largest_island_area = region_areas[:2]
+    else:
+        largest_island_area, second_largest_island_area = region_areas[0], 0
     region_centroids = [r.centroid for r in regions]
-    region_axis_major = [r.axis_major_length for r in regions]
-    region_axis_minor = [r.axis_minor_length for r in regions]
-    mean_island_distance = np.mean([get_island_distances(i, j) for (i,j) in pairwise(region_centroids)])
-    mean_anisotropy = np.nanmean([get_anisotropy_factor(major, minor) for (major, minor) in zip(region_axis_major, region_axis_minor)])
+    mean_island_distance = np.nanmean([get_island_distances(i, j) for (i,j) in pairwise(region_centroids)])
+    mean_anisotropy = np.nanmean([get_anisotropy_factor(major, minor) for (major, minor) in zip(major_axes, minor_axes)])
     return largest_island_area, second_largest_island_area, total_island_area, mean_island_area, mean_island_distance, mean_anisotropy
 
 def structural_image_autocorrelation(frame: np.ndarray):
