@@ -1,5 +1,5 @@
 from typing import List, Tuple
-
+import traceback
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,6 +24,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
                 figures.append(bfig)
         except Exception as e:
             with open(fail_file_loc, "a", encoding="utf-8") as log_file:
+                log_file.write(traceback.format_exc())
                 log_file.write(
                     f"Channel {channel}, Module: Binarization, Exception: {str(e)}\n"
                 )
@@ -34,6 +35,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
             results.flow = analyze_optical_flow(video, output_dir, config.optical_flow_parameters, config.reader, config.writer)
         except Exception as e:
             with open(fail_file_loc, "a", encoding="utf-8") as log_file:
+                log_file.write(traceback.format_exc())
                 log_file.write(
                     f"Channel {channel}, Module: Optical Flow, Exception: {str(e)}\n"
                 )
@@ -49,6 +51,7 @@ def run_analysis_pipeline(filepath: str, file: np.ndarray, channel: int, config:
                 figures.append(ifig)
         except Exception as e:
             with open(fail_file_loc, "a", encoding="utf-8") as log_file:
+                log_file.write(traceback.format_exc())
                 log_file.write(
                     f"Channel {channel}, Module: Intensity Distribution, Exception: {str(e)}\n"
                 )
